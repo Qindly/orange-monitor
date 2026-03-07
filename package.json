@@ -1,0 +1,13 @@
+{
+  "name": "orange-monitor",
+  "private": true,
+  "packageManager": "pnpm@10.30.1",
+  "scripts": {
+    "dev": "pnpm -r --parallel --filter @orange-monitor/collector-api --filter @orange-monitor/monitor-web dev",
+    "dev:server": "pnpm --filter @orange-monitor/collector-api dev",
+    "dev:web": "pnpm --filter @orange-monitor/monitor-web dev",
+    "build": "pnpm --filter @orange-monitor/sdk-core build && pnpm --filter @orange-monitor/collector-api build && pnpm --filter @orange-monitor/monitor-web build",
+    "typecheck": "pnpm --filter @orange-monitor/sdk-core typecheck && pnpm --filter @orange-monitor/collector-api typecheck && pnpm --filter @orange-monitor/monitor-web typecheck",
+    "start": "pnpm build && pnpm --filter @orange-monitor/collector-api start"
+  }
+}
