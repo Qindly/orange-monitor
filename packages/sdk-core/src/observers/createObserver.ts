@@ -4,7 +4,7 @@
  * @param install 真正的 patch 函数，接收 trigger（用来触发所有 handler）
  * @returns addHandler 函数，供外部注册消费者
  */
-export function createObserver(install: (trigger: (event: T) => void) => void) {
+export function createObserver<T>(install: (trigger: (event: T) => void) => void) {
     const handlers: Array<(data: T) => void> = [];
     let installed = false;
 
