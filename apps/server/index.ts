@@ -12,9 +12,14 @@ app.use(express.json());
 type ErrorType =
   | 'js_error'
   | 'promise_error'
+  | 'resource_error'
+  | 'http_error'
   | 'manual_error'
   | 'manual_message';
+
+
 interface MonitorEventPayload {
+  eventId: string;
   projectId: string;
   type: ErrorType;
   message: string;
@@ -24,6 +29,7 @@ interface MonitorEventPayload {
   colno?: number;
   timestamp: number;
   url: string;
+  extra?: Record<string, unknown>;
 }
 
 interface StoredError extends MonitorEventPayload {
@@ -36,6 +42,7 @@ const errorStore: StoredError[] = [];
 function createId() {
   return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
+
 app.get('/', (_req, res) => {
   res.json({
     success: true,
@@ -45,39 +52,35 @@ app.get('/', (_req, res) => {
 
 //接收上报
 app.post('/report', (req, res) => {
-  const body = req.body as Partial<MonitorEventPayload>;
-  if (!body.projectId || !body.type || !body.message || !body.timestamp || !body.url) {
+  const body = req.body as {
+    projectId?: string;
+    events?: MonitorEventPayload[];
+  };
+  if (!body.projectId || !Array.isArray(body.events)) {
     return res.status(400).json({
       success: false,
-      message: '缺少必要字段',
+      message: '请求格式错误，缺少 projectId 或 events',
     });
   }
-  const errorItem: StoredError = {
+  const validEvents = body.events.filter(
+    (item) => item && item.type && item.message && item.timestamp && item.url
+  );
+  const storedList: StoredError[] = validEvents.map((item) => ({
+    ...item,
     id: createId(),
-    projectId: body.projectId,
-    type: body.type,
-    message: body.message,
-    stack: body.stack || '',
-    filename: body.filename || '',
-    lineno: body.lineno,
-    colno: body.colno,
-    timestamp: body.timestamp,
-    url: body.url,
     createdAt: Date.now(),
-  };
-  // 新数据放前面，方便查看最新错误
-  errorStore.unshift(errorItem);
-  console.log('收到错误上报:');
-  console.log(errorItem);
-  return res.json({
+  }));
+  errorStore.unshift(...storedList);
+  console.log(`收到批量错误上报，共 ${storedList.length} 条`);
+  console.log(storedList);
+  res.json({
     success: true,
-    message: '收到上报',
+    message: '批量上报成功',
     data: {
-      id: errorItem.id,
+      count: storedList.length,
     },
   });
 });
-
 
 // 获取错误列表
 app.get('/errors', (req, res) => {
@@ -132,3 +135,4 @@ app.delete('/errors', (_req, res) => {
 app.listen(PORT, () => {
   console.log(`server running at http://localhost:${PORT}`);
 });
+

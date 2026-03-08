@@ -1,26 +1,26 @@
 import { MonitorClient } from './client';
-import { jsErrorIntegration } from './handlers/jsError';
-import { promiseErrorIntegration } from './handlers/promiseError';
-import { resourceErrorIntegration } from './handlers/resourceError';
-import { httpErrorIntegration } from './handlers/httpError';
+import { jsErrorHandler } from './handlers/jsError';
+import { promiseErrorHandler } from './handlers/promiseError';
+import { resourceErrorHandler } from './handlers/resourceError';
+import { httpErrorHandler } from './handlers/httpError';
 import type { MonitorOptions } from './types';
 
 export type { MonitorOptions, MonitorEventPayload, MonitorEventType } from './types';
 export { MonitorClient } from './client';
 
-const defaultIntegrations = [
-  jsErrorIntegration(),
-  promiseErrorIntegration(),
-  resourceErrorIntegration(),
-  httpErrorIntegration(),
+const defaultHandlers = [
+  jsErrorHandler(),
+  promiseErrorHandler(),
+  resourceErrorHandler(),
+  httpErrorHandler(),
 ];
 
 export function initMonitor(options: MonitorOptions): MonitorClient {
   const client = new MonitorClient(options);
 
-  // 用户可传自定义 integrations，否则走默认
-  const integrations = options.integrations ?? defaultIntegrations;
-  integrations.forEach(integration => integration.setup(client));
+  // 用户可传自定义 Handlers，否则走默认
+  const Handlers = options.Handlers ?? defaultHandlers;
+  Handlers.forEach(Handler => Handler.setup(client));
 
   client.startTimer();
 

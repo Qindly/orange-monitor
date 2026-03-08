@@ -1,19 +1,18 @@
-import { addJSErrorHandler } from '../observers/globalHandlers';
-import type { Integration, MonitorClient, CaptureInput } from '../types';
+import { addJSErrorObserver } from '../observers/global';
+import type { Handler, MonitorClient } from '../types';
 
-export const jsErrorIntegration = (): Integration => ({
+export const jsErrorHandler = (): Handler => ({
   name: 'JSError',
   setup(client: MonitorClient) {
-    addJSErrorHandler(({ message, filename, lineno, colno, error }) => {
-      const input: CaptureInput = {
+    addJSErrorObserver(({ message, filename, lineno, colno, error }) => {
+      client.capture({
         type: 'js_error',
         message: message || 'Unknown JS Error',
         filename,
         lineno,
         colno,
         stack: error?.stack,
-      };
-      client.capture(input);
+      });
     });
   },
 });

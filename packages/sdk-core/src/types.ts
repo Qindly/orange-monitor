@@ -3,7 +3,7 @@ export interface MonitorOptions {
   projectId: string;
   batchSize?: number;
   flushInterval?: number;
-  integrations?: Integration[];
+  Handlers?: Handler[];
 }
 
 export type MonitorEventType =
@@ -29,8 +29,8 @@ export interface MonitorEventPayload {
   extra?: Record<string, unknown>;
 }
 
-// Integration 插件接口
-export interface Integration {
+// Handler 插件接口
+export interface Handler {
   name: string;
   setup(client: MonitorClient): void;
 }

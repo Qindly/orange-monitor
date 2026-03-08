@@ -5,7 +5,7 @@ import { sendByFetch, sendByBeacon } from './utils/transport';
 export class MonitorClient {
   private queue: MonitorEventPayload[] = [];
   private timer: ReturnType<typeof setInterval> | null = null;
-  private options: Required<Omit<MonitorOptions, 'integrations'>>;
+  private options: Required<Omit<MonitorOptions, 'Handlers'>>;
 
   constructor(options: MonitorOptions) {
     this.options = {
@@ -15,7 +15,7 @@ export class MonitorClient {
     };
   }
 
-  // 唯一公开入口：补全通用字段，其余字段由 integration 提供
+  // 唯一公开入口：补全通用字段，其余字段由 Handler 提供
   capture(input: CaptureInput): void {
     const event: MonitorEventPayload = {
       eventId: createEventId(),
@@ -38,7 +38,7 @@ export class MonitorClient {
     }
   }
 
-  flush(opts?: { useBeacon?: boolean }): void {
+  async flush(opts?: { useBeacon?: boolean }): Promise<void> {
     if (this.queue.length === 0) return;
 
     const events = [...this.queue];
@@ -50,10 +50,12 @@ export class MonitorClient {
       return;
     }
 
-    sendByFetch(this.options.dsn, payload, () => {
-      // 失败回退：重新放回队列头部
-      this.queue.unshift(...events);
-    });
+    try {
+      await sendByFetch(this.options.dsn, { projectId: this.options.projectId, events });
+    } catch {
+      console.error('[Monitor] 上报失败，回退队列');
+      this.queue.unshift(...events); // 失败了，client 自己决定怎么处理
+    }
   }
 
   captureException(error: unknown, extra?: Record<string, unknown>): void {

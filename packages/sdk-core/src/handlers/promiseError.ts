@@ -1,31 +1,41 @@
-import { addPromiseErrorHandler } from '../observers/globalHandlers';
-import type { Integration, MonitorClient, CaptureInput } from '../types';
+import { addPromiseErrorObserver  } from '../observers/global';
+import type { Handler, MonitorClient, CaptureInput } from '../types';
 
-function extractReason(reason: unknown): { message: string; stack?: string } {
-  if (reason instanceof Error) {
-    return { message: reason.message, stack: reason.stack };
+
+type ReasonResult = { message: string; stack?: string };
+
+// 每个解析器：能处理返回结果，不能处理返回 null
+const reasonParsers: Array<(reason: unknown) => ReasonResult | null> = [
+  (r) => r instanceof Error
+    ? { message: r.message, stack: r.stack }
+    : null,
+
+  (r) => typeof r === 'string'
+    ? { message: r }
+    : null,
+
+  (r) => {
+    try { return { message: JSON.stringify(r) }; } catch { return null; }
+  },
+
+  (r) => ({ message: String(r) }), // 兜底，永远成功
+];
+
+function extractReason(reason: unknown): ReasonResult {
+  for (const parser of reasonParsers) {
+    const result = parser(reason);
+    if (result) return result;
   }
-  if (typeof reason === 'string') {
-    return { message: reason };
-  }
-  try {
-    return { message: JSON.stringify(reason) };
-  } catch {
-    return { message: String(reason) };
-  }
+  return { message: 'Unknown reason' }; // 理论上不会到这里
+
 }
 
-export const promiseErrorIntegration = (): Integration => ({
+export const promiseErrorHandler = (): Handler => ({
   name: 'PromiseError',
   setup(client: MonitorClient) {
-    addPromiseErrorHandler(({ reason }) => {
+    addPromiseErrorObserver(({ reason }) => {
       const { message, stack } = extractReason(reason);
-      const input: CaptureInput = {
-        type: 'promise_error',
-        message,
-        stack,
-      };
-      client.capture(input);
+      client.capture({ type: 'promise_error', message, stack });
     });
   },
 });

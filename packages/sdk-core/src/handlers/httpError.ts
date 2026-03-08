@@ -1,57 +1,58 @@
-import { addFetchInstrumentationHandler } from '../observers/fetch';
-import { addXhrInstrumentationHandler } from '../observers/xhr';
-import type { Integration, MonitorClient, CaptureInput } from '../types';
+import { addFetchObserver, type FetchData } from '../observers/fetch';
+import { addXhrObserver, type XhrData } from '../observers/xhr';
+import type { Handler, MonitorClient, CaptureInput } from '../types';
 
-export const httpErrorIntegration = (): Integration => ({
+function buildFromFetch(data: FetchData): CaptureInput | null {
+  const { url, method, startTime, endTime, response, error } = data;
+  const duration = endTime - startTime;
+  const base = { requestType: 'fetch' as const, requestUrl: url, method, duration };
+
+  if (error) {
+    return {
+      type: 'http_error',
+      message: error instanceof Error ? error.message : 'Fetch network error',
+      stack: error instanceof Error ? error.stack : undefined,
+      extra: base,
+    };
+  }
+  if (response && !response.ok) {
+    return {
+      type: 'http_error',
+      message: `Fetch failed: ${response.status} ${response.statusText}`,
+      extra: { ...base, status: response.status, statusText: response.statusText },
+    };
+  }
+  return null;
+}
+
+function buildFromXhr(data: XhrData): CaptureInput | null {
+  const { url, method, startTime, endTime, status, statusText, isError } = data;
+  const duration = endTime - startTime;
+  const base = { requestType: 'xhr' as const, requestUrl: url, method, duration };
+
+  if (isError) {
+    return { type: 'http_error', message: 'XHR network error', extra: base };
+  }
+  if (status >= 400) {
+    return {
+      type: 'http_error',
+      message: `XHR failed: ${status} ${statusText}`,
+      extra: { ...base, status, statusText },
+    };
+  }
+  return null;
+}
+
+export const httpErrorHandler = (): Handler => ({
   name: 'HttpError',
   setup(client: MonitorClient) {
-    // 消费 fetch 探针
-    addFetchInstrumentationHandler(({ url, method, startTime, endTime, response, error }) => {
-      const duration = endTime - startTime;
-
-      if (error) {
-        client.capture({
-          type: 'http_error',
-          message: error instanceof Error ? error.message : 'Fetch network error',
-          stack: error instanceof Error ? error.stack : undefined,
-          extra: { requestType: 'fetch', requestUrl: url, method, duration },
-        });
-        return;
-      }
-
-      if (response && !response.ok) {
-        client.capture({
-          type: 'http_error',
-          message: `Fetch failed: ${response.status} ${response.statusText}`,
-          extra: {
-            requestType: 'fetch',
-            requestUrl: url,
-            method,
-            status: response.status,
-            statusText: response.statusText,
-            duration,
-          },
-        });
-      }
+    addFetchObserver(data => {
+      const input = buildFromFetch(data);
+      if (input) client.capture(input);
     });
 
-    // 消费 xhr 探针
-    addXhrInstrumentationHandler(({ url, method, startTime, endTime, status, statusText, isError }) => {
-      const duration = endTime - startTime;
-      const input: CaptureInput = isError
-        ? {
-            type: 'http_error',
-            message: 'XHR network error',
-            extra: { requestType: 'xhr', requestUrl: url, method, duration },
-          }
-        : status >= 400
-          ? {
-              type: 'http_error',
-              message: `XHR failed: ${status} ${statusText}`,
-              extra: { requestType: 'xhr', requestUrl: url, method, status, statusText, duration },
-            }
-          : null;
-
+    addXhrObserver(data => {
+      const input = buildFromXhr(data);
       if (input) client.capture(input);
     });
   },

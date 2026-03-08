@@ -1,79 +1,65 @@
-// 给 XHR 实例挂私有字段用的 key
-const XHR_DATA_KEY = '__monitor_xhr__';
+import { createObserver } from './createObserver';
 
-type XhrPrivateData = {
-  url: string;
-  method: string;
-  startTime: number;
-};
-
-export type XhrHandlerData = {
+export type XhrData = {
   url: string;
   method: string;
   startTime: number;
   endTime: number;
   status: number;
   statusText: string;
-  isError: boolean; // true = 网络错误，false = 有 HTTP 响应
+  isError: boolean;
 };
 
-const handlers: Array<(data: XhrHandlerData) => void> = [];
-let installed = false;
+const XHR_META_KEY = '__monitor_xhr__';
 
-export function addXhrInstrumentationHandler(handler: (data: XhrHandlerData) => void) {
-  handlers.push(handler);
-  if (!installed) {
-    installed = true;
-    instrumentXhr();
-  }
-}
+type XhrMeta = {
+  url: string;
+  method: string;
+  startTime: number;
+};
 
-function instrumentXhr() {
+export const addXhrObserver = createObserver<XhrData>((trigger) => {
   const originalOpen = XMLHttpRequest.prototype.open;
   const originalSend = XMLHttpRequest.prototype.send;
 
   XMLHttpRequest.prototype.open = function (method, url, ...rest) {
-    (this as any)[XHR_DATA_KEY] = {
+    (this as any)[XHR_META_KEY] = {
       url: String(url),
       method: method.toUpperCase(),
-    } satisfies Partial<XhrPrivateData>;
-    return originalOpen.call(this, method, url, ...rest as any);
+    } satisfies Partial<XhrMeta>;
+    return originalOpen.call(this, method, url, ...(rest as any));
   };
 
   XMLHttpRequest.prototype.send = function (body) {
-    const meta = (this as any)[XHR_DATA_KEY] as XhrPrivateData | undefined;
+    const meta = (this as any)[XHR_META_KEY] as XhrMeta | undefined;
     if (!meta) return originalSend.call(this, body);
 
     meta.startTime = Date.now();
 
     this.addEventListener('loadend', () => {
-      handlers.forEach(h =>
-        h({
-          url: meta.url,
-          method: meta.method,
-          startTime: meta.startTime,
-          endTime: Date.now(),
-          status: this.status,
-          statusText: this.statusText,
-          isError: false,
-        })
-      );
+      trigger({
+        url: meta.url,
+        method: meta.method,
+        startTime: meta.startTime,
+        endTime: Date.now(),
+        status: this.status,
+        statusText: this.statusText,
+        isError: false,
+      });
     });
 
     this.addEventListener('error', () => {
-      handlers.forEach(h =>
-        h({
-          url: meta.url,
-          method: meta.method,
-          startTime: meta.startTime,
-          endTime: Date.now(),
-          status: 0,
-          statusText: '',
-          isError: true,
-        })
-      );
+      trigger({
+        url: meta.url,
+        method: meta.method,
+        startTime: meta.startTime,
+        endTime: Date.now(),
+        status: 0,
+        statusText: '',
+        isError: true,
+      });
     });
 
     return originalSend.call(this, body);
   };
-}
+});
