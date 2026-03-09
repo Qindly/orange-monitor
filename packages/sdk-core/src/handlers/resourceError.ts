@@ -9,7 +9,17 @@ export const resourceErrorHandler = (): Handler => ({
         type: 'resource_error',
         message: `Resource load failed: <${tagName}> ${resourceUrl}`,
         filename: resourceUrl,
-        extra: { tagName, resourceUrl },
+        details: {
+          resource: {
+            tagName,
+            resourceUrl,
+          },
+          runtime: {
+            userAgent: navigator.userAgent,
+            language: navigator.language,
+            
+          },
+        },
       });
     });
   },

@@ -1,4 +1,43 @@
-import type { CaptureInput, MonitorEventPayload, MonitorEventType } from '../types';
+import type { CaptureInput,  MonitorEventPayload,MonitorEventType, IssueCategory } from '../types';
+
+type EnrichedCaptureInput = Omit<
+  MonitorEventPayload,
+  'eventId' | 'projectId' | 'timestamp' | 'url' | 'sessionId'
+>;
+
+export function getCategory(type: MonitorEventType): IssueCategory {
+    switch (type) {
+        case 'resource_error':
+            return 'resource';
+        case 'http_error':
+            return 'api';
+        case 'js_error':
+        case 'promise_error':
+        case 'manual_error':
+        case 'manual_message':
+        default:
+            return 'js';
+    }
+}
+
+export function getTitle(type: MonitorEventType): string {
+    switch (type) {
+        case 'js_error':
+            return 'JS 运行时异常';
+        case 'promise_error':
+            return 'Promise 异常';
+        case 'resource_error':
+            return '资源加载异常';
+        case 'http_error':
+            return 'API 请求异常';
+        case 'manual_error':
+            return '手动异常';
+        case 'manual_message':
+            return '手动消息';
+        default:
+            return '未知异常';
+    }
+}
 
 export function normalizeMessage(message: string): string {
     return message
@@ -29,7 +68,7 @@ export function getStackFrames(stack?: string): string[] {
 
 export function getStackTopFrame(stack?: string): string {
     const frames = getStackFrames(stack);
-    return frames.length > 0 ? frames[0] : "";
+    return frames[0] || '';
 }
 
 function cleanStackFrame(frame: string): string {
@@ -80,14 +119,7 @@ export function buildFingerprint(input: {
 
 }
 
-export function enrichCaptureInput(input: CaptureInput): CaptureInput {
-    if (input.fingerprint && input.normalizedMessage) {
-        return {
-            ...input,
-            stackTopFrame: input.stackTopFrame || getStackTopFrame(input.stack),
-        };
-    }
-
+export function enrichCaptureInput(input: CaptureInput):EnrichedCaptureInput{
     const built = buildFingerprint({
         type: input.type,
         message: input.normalizedMessage || input.message,
@@ -96,29 +128,13 @@ export function enrichCaptureInput(input: CaptureInput): CaptureInput {
         lineno: input.lineno,
         colno: input.colno,
     });
-
     return {
         ...input,
+        category: input.category || getCategory(input.type),
+        title: input.title || getTitle(input.type),
         normalizedMessage: input.normalizedMessage || built.normalizedMessage,
         fingerprint: input.fingerprint || built.fingerprint,
         stackTopFrame: input.stackTopFrame || built.stackTopFrame,
     };
 }
 
-export function mergeEvents(
-    prev: MonitorEventPayload,
-    next: MonitorEventPayload
-): MonitorEventPayload {
-    return {
-        ...prev,
-        ...next,
-        occurrenceCount: (prev.occurrenceCount ?? 1) + (next.occurrenceCount ?? 1),
-        suppressedCount: (prev.suppressedCount ?? 0) + (next.suppressedCount ?? 0),
-        firstSeen: prev.firstSeen ?? prev.timestamp,
-        lastSeen: next.lastSeen ?? next.timestamp,
-        extra: {
-            ...(prev.extra || {}),
-            ...(next.extra || {}),
-        },
-    };
-}

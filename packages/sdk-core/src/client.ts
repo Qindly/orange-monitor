@@ -6,22 +6,21 @@ import type {
 } from './types';
 import { createEventId } from './utils/createEventId';
 import { sendByFetch, sendByBeacon } from './utils/transport';
-import { enrichCaptureInput, mergeEvents } from './utils/normalize';
-import { getSessionId, SessionDedupeStore } from './utils/session';
+import { enrichCaptureInput} from './utils/normalize';
+import { getSessionId} from './utils/session';
 
 export class MonitorClient {
   private queue: MonitorEventPayload[] = [];
   private timer: ReturnType<typeof setInterval> | null = null;
   private options: Required<Omit<MonitorOptions, 'Handlers'>>;
   private sessionId: string;
-  private sessionDedupeStore = new SessionDedupeStore();
 
   constructor(options: MonitorOptions) {
     this.options = {
       batchSize: 3,
       flushInterval: 5000,
-      dedupeWindow: 10000,
-      dedupeBySession: true,
+      // dedupeWindow: 10000,
+      // dedupeBySession: true,
       ...options,
     };
 
@@ -38,10 +37,6 @@ export class MonitorClient {
       timestamp: now,
       url: window.location.href,
       sessionId: this.sessionId,
-      occurrenceCount: 1,
-      suppressedCount: 0,
-      firstSeen: now,
-      lastSeen: now,
       ...enrichedInput,
     };
 
@@ -53,32 +48,7 @@ export class MonitorClient {
   }
 
   private enqueue(event: MonitorEventPayload): void {
-    if (this.options.dedupeBySession && event.fingerprint) {
-      const existing = this.queue.find(item => item.fingerprint === event.fingerprint);
-
-      if (existing) {
-        existing.occurrenceCount = (existing.occurrenceCount ?? 1) + 1;
-        existing.lastSeen = event.timestamp;
-        return;
-      }
-
-      if (this.sessionDedupeStore.has(event.fingerprint)) {
-        return;
-      }
-
-      this.sessionDedupeStore.add(event.fingerprint);
-    }
-
-    const sameIndex = this.queue.findIndex(
-      item => item.fingerprint === event.fingerprint
-    );
-
-    if (sameIndex >= 0) {
-      this.queue[sameIndex] = mergeEvents(this.queue[sameIndex], event);
-    } else {
-      this.queue.push(event);
-    }
-
+    this.queue.push(event);
     if (this.queue.length >= this.options.batchSize) {
       this.flush();
     }
@@ -97,7 +67,9 @@ export class MonitorClient {
 
     if (opts?.useBeacon) {
       const success = sendByBeacon(this.options.dsn, payload);
-      if (success) return;
+      if (success) {
+        return;
+      }
     }
 
     try {
@@ -107,6 +79,7 @@ export class MonitorClient {
       this.queue.unshift(...events);
     }
   }
+
 
   captureException(error: unknown, options?: ManualCaptureOptions): void {
     let message = 'Unknown error';
@@ -127,21 +100,36 @@ export class MonitorClient {
 
     this.capture({
       type: 'manual_error',
+      title: message,
       message,
       stack,
       extra: options?.extra,
-      normalizedMessage: options?.normalizedMessage,
-      fingerprint: options?.fingerprint,
+      ...(options?.normalizedMessage ? { normalizedMessage: options.normalizedMessage } : {}),
+      ...(options?.fingerprint ? { fingerprint: options.fingerprint } : {}),
+      details: {
+        runtime: {
+          userAgent: navigator.userAgent,
+          language: navigator.language,
+        },
+      },
     });
   }
 
   captureMessage(message: string, options?: ManualCaptureOptions): void {
     this.capture({
       type: 'manual_message',
+      category: 'js',
+      title: message,
       message,
       extra: options?.extra,
-      normalizedMessage: options?.normalizedMessage,
-      fingerprint: options?.fingerprint,
+      ...(options?.normalizedMessage ? { normalizedMessage: options.normalizedMessage } : {}),
+      ...(options?.fingerprint ? { fingerprint: options.fingerprint } : {}),
+      details: {
+        runtime: {
+          userAgent: navigator.userAgent,
+          language: navigator.language,
+        },
+      },
     });
   }
 

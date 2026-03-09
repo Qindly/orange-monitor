@@ -5,7 +5,15 @@ import { resourceErrorHandler } from './handlers/resourceError';
 import { httpErrorHandler } from './handlers/httpError';
 import type { MonitorOptions } from './types';
 
-export type { MonitorOptions, MonitorEventPayload, MonitorEventType } from './types';
+export type {
+  MonitorOptions,
+  MonitorEventPayload,
+  MonitorEventType,
+  IssueCategory,
+  CaptureInput,
+  EventDetails,
+  ManualCaptureOptions,
+} from './types';
 export { MonitorClient } from './client';
 
 const defaultHandlers = [

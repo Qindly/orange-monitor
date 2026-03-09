@@ -5,13 +5,21 @@ export const jsErrorHandler = (): Handler => ({
   name: 'JSError',
   setup(client: MonitorClient) {
     addJSErrorObserver(({ message, filename, lineno, colno, error }) => {
+      const errorMessage = message || 'Unknown JS Error';
       client.capture({
         type: 'js_error',
-        message: message || 'Unknown JS Error',
+        message: errorMessage,
         filename,
         lineno,
         colno,
         stack: error?.stack,
+        details: {
+          runtime: {
+            userAgent: navigator.userAgent,
+            language: navigator.language,
+            
+          },
+        },
       });
     });
   },

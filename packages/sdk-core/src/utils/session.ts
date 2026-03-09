@@ -15,18 +15,4 @@ export function getSessionId(): string {
     }
 }
 
-export class SessionDedupeStore {   
-    private sentFingerprints = new Set<string>();
 
-    has(fingerprint: string): boolean {
-        return this.sentFingerprints.has(fingerprint);
-    }
-
-    add(fingerprint: string): void {
-        this.sentFingerprints.add(fingerprint);
-    }
-
-    clear(): void {
-        this.sentFingerprints.clear();
-    }
-}

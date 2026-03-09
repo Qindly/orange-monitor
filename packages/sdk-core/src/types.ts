@@ -1,15 +1,11 @@
 export interface MonitorOptions {
-  dsn: string;
+  dsn: string;  //上报地址，必填项
   projectId: string;
-  batchSize?: number;
-  flushInterval?: number;
+  batchSize?: number;  //累计到多少就上报
+  flushInterval?: number;  //刷新间隔
+  // dedupeWindow?: number;  //去重窗口时间
+  // dedupeBySession?: boolean;  //是否按会话去重
   Handlers?: Handler[];
-
-  // dedupe 窗口，默认一个页面会话内永久去重时可以不用它
-  dedupeWindow?: number;
-
-  // 是否开启 session 内同 issue 只报一次
-  dedupeBySession?: boolean;
 }
 
 export type MonitorEventType =
@@ -21,36 +17,76 @@ export type MonitorEventType =
   | 'manual_message';
 
 
+export type IssueCategory = 'js' | 'resource' | 'api';
+
+export interface EventDetails {
+  reason?: unknown;
+  request?: {
+    method?: string;
+    url?: string;
+    status?: number;
+    statusText?: string;
+    duration?: number;
+    requestType?: 'fetch' | 'xhr';
+  };
+  resource?: {
+    tagName?: string;
+    resourceUrl?: string;
+  };
+  runtime?: {
+    userAgent?: string;
+    language?: string;
+  };
+}
+
 export interface MonitorEventPayload {
+  // 事件本身
   eventId: string;
   projectId: string;
   type: MonitorEventType;
-  message: string;
+  category: IssueCategory;
 
-  normalizedMessage?: string;
-  fingerprint?: string;
+  // issue 聚合关键字段
+  title: string;
+  message: string; //原始 message 例如 Request failed for userId=123 at 1719999999
+  normalizedMessage: string; //规范化后的 message 例如 Request failed for userId={userId} at {timestamp}
+  fingerprint: string;  //稳定指纹
+
+  // 基础定位信息
   stack?: string;
   stackTopFrame?: string;
-
   filename?: string;
   lineno?: number;
   colno?: number;
 
+  // 发生信息
   timestamp: number;
   url: string;
+
+  // 用户/会话/页面维度
+  userId?: string;
+  sessionId?: string;
+
+  // // 聚合统计字段（客户端去重用）
+  // occurrenceCount?: number;
+  // suppressedCount?: number;
+  // firstSeen?: number;
+  // lastSeen?: number;
+
+  // 聚合辅助信息
+  tags?: Record<string, string>;
   extra?: Record<string, unknown>;
 
-  occurrenceCount?: number;
-  suppressedCount?: number;
-  firstSeen?: number;
-  lastSeen?: number;
+  details?: EventDetails;
 
 }
 
+//业务方上报时的可选项
 export interface ManualCaptureOptions {
   extra?: Record<string, unknown>;
   normalizedMessage?: string;
   fingerprint?: string;
+  details?: Partial<EventDetails>;
 }
 
 
@@ -63,8 +99,23 @@ export interface Handler {
 // client.capture() 的入参，通用字段由 client 自动补全
 export type CaptureInput = Omit<
   MonitorEventPayload,
-  'eventId' | 'projectId' | 'timestamp' | 'url'
->;
+  | 'eventId'
+  | 'projectId'
+  | 'timestamp'
+  | 'url'
+  | 'sessionId'
+  | 'category'
+  | 'title'
+  | 'normalizedMessage'
+  | 'fingerprint'
+  | 'stackTopFrame'
+> & {
+  category?: IssueCategory;
+  title?: string;
+  normalizedMessage?: string;
+  fingerprint?: string;
+  stackTopFrame?: string;
+};
 
 // 避免循环引用，在这里前向声明 MonitorClient 的最小接口
 export interface MonitorClient {

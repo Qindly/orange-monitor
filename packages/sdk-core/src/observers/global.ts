@@ -12,9 +12,10 @@ export type JSErrorData = {
 
 export const addJSErrorObserver = createObserver<JSErrorData>((trigger) => {
   window.addEventListener('error', (event) => {
-    const target = event.target as HTMLElement | null;
-    // target 是 DOM 元素说明是资源错误，排除掉
-    if (target && target !== (window as unknown)) return;
+    const target = event.target;
+
+    // 资源错误通常 target 是具体元素节点；JS 运行时错误通常 target 是 window
+    if (target instanceof Element) return;
 
     trigger({
       message: event.message,
