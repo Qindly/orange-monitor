@@ -7,7 +7,7 @@ interface Props {
 
 export function IssueStatsBar({ issues }: Props) {
   const totalIssues = issues.length;
-  const totalCount = issues.reduce((sum, item) => sum + item.totalCount, 0);
+  const totalCount = issues.reduce((sum, item) => sum + item.eventCount, 0);
   const totalUsers = issues.reduce((sum, item) => sum + item.affectedUsers, 0);
   const totalPages = issues.reduce((sum, item) => sum + item.affectedPages, 0);
 

@@ -7,25 +7,36 @@ function App() {
     }, 0);
   };
 
-  const handlePromiseError = () => {
-    Promise.reject(new Error('这是一个 Promise 报错'));
+  const handlePromiseError1 = () => {
+    Promise.reject(new Error('这是一个 Promise111 报错'));
+  };
+
+  const handlePromiseError2 = () => {
+    Promise.reject(new Error('这是一个 Promise2222 报错'));
   };
 
   const handleManualError = () => {
     monitor.captureException(new Error('这是一个手动上报的错误'), {
-      module: 'test-button',
+      extra: { module: 'test-button' },
     });
   };
 
   const handleManualMessage = () => {
     monitor.captureMessage('这是一条手动上报的普通消息', {
-      level: 'info',
+      extra: { level: 'info' },
     });
   };
 
-  const handleResourceError = () => {
+  const handleResourceError1 = () => {
     const img = document.createElement('img');
     img.src = 'http://localhost:9999/not-found-image.png';
+    document.body.appendChild(img);
+  };
+
+
+  const handleResourceError2 = () => {
+    const img = document.createElement('img');
+    img.src = 'http://localhost:8888/not-found-image.png';
     document.body.appendChild(img);
   };
 
@@ -64,10 +75,12 @@ function App() {
 
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
         <button onClick={handleJsError}>触发 JS 报错</button>
-        <button onClick={handlePromiseError}>触发 Promise 报错</button>
+        <button onClick={handlePromiseError1}>触发 Promise 报错1</button>
+        <button onClick={handlePromiseError2}>触发 Promise 报错2</button>
         <button onClick={handleManualError}>手动上报错误</button>
         <button onClick={handleManualMessage}>手动上报消息</button>
-        <button onClick={handleResourceError}>触发资源加载错误</button>
+        <button onClick={handleResourceError1}>触发资源加载错误1</button>
+        <button onClick={handleResourceError2}>触发资源加载错误2</button>
         <button onClick={handleFetchHttpError}>触发 fetch 404</button>
         <button onClick={handleFetchNetworkError}>触发 fetch 网络错误</button>
         <button onClick={handleXhrHttpError}>触发 xhr 404</button>

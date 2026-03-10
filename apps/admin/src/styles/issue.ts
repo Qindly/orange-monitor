@@ -1,35 +1,43 @@
 export type IssueCategory = 'js' | 'resource' | 'api';
 
-export type IssueType =
-  | 'js_error'
-  | 'promise_error'
-  | 'resource_error'
-  | 'http_error';
-
 export interface IssueItem {
   id: string;
   projectId: string;
+  groupingKey: string;
   category: IssueCategory;
-  errorType: IssueType;
+  type: string;
+
   title: string;
-  fingerprint: string;
   normalizedMessage: string;
-  totalCount: number;
+
+  eventCount: number;
   affectedUsers: number;
   affectedPages: number;
-  lastSeenAt: string;
+
+  firstSeenAt: number;
+  lastSeenAt: number;
+
   status: 'open' | 'resolved' | 'ignored';
+
+  details?: Record<string, unknown>;
 }
 
 export interface IssueEventItem {
   id: string;
+  eventId: string;
   issueId: string;
-  userId: string;
-  sessionId: string;
-  pageUrl: string;
+
+  category: IssueCategory;
+  type: string;
+
   message: string;
-  stack?: string;
-  triggerTime: string;
-  occurrenceCount: number;
+  timestamp: number;
+  url: string;
+
+  userId?: string;
+  sessionId?: string;
+
+  rawStack?: string;
   extra?: Record<string, unknown>;
+  details?: Record<string, unknown>;
 }

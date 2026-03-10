@@ -1,6 +1,7 @@
 import './EventTimelineItem.scss';
 import { useState } from 'react';
 import type { IssueEventItem } from '../../../styles/issue';
+import { formatTime } from '../../utils';
 
 interface Props {
   event: IssueEventItem;
@@ -19,11 +20,10 @@ export function EventTimelineItem({ event }: Props) {
         <div className="event-timeline-item__summary-main">
           <div className="event-timeline-item__message">{event.message}</div>
           <div className="event-timeline-item__meta">
-            <span>用户：{event.userId}</span>
-            <span>会话：{event.sessionId}</span>
-            <span>页面：{event.pageUrl}</span>
-            <span>时间：{event.triggerTime}</span>
-            <span>次数：{event.occurrenceCount}</span>
+            <span>用户：{event.userId || '-'}</span>
+            <span>会话：{event.sessionId || '-'}</span>
+            <span>页面：{event.url}</span>
+            <span>时间：{formatTime(event.timestamp)}</span>
           </div>
         </div>
         <span className="event-timeline-item__toggle">
@@ -35,7 +35,7 @@ export function EventTimelineItem({ event }: Props) {
         <div className="event-timeline-item__detail">
           <div className="event-timeline-item__block">
             <div className="event-timeline-item__label">Stack</div>
-            <pre className="event-timeline-item__pre">{event.stack || '无堆栈信息'}</pre>
+            <pre className="event-timeline-item__pre">{event.rawStack || '无堆栈信息'}</pre>
           </div>
 
           <div className="event-timeline-item__block">
@@ -44,6 +44,15 @@ export function EventTimelineItem({ event }: Props) {
               {JSON.stringify(event.extra || {}, null, 2)}
             </pre>
           </div>
+
+          {event.details && (
+            <div className="event-timeline-item__block">
+              <div className="event-timeline-item__label">Details</div>
+              <pre className="event-timeline-item__pre">
+                {JSON.stringify(event.details, null, 2)}
+              </pre>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -9,5 +9,9 @@
     "build": "pnpm --filter @orange-monitor/sdk-core build && pnpm --filter @orange-monitor/collector-api build && pnpm --filter @orange-monitor/monitor-web build",
     "typecheck": "pnpm --filter @orange-monitor/sdk-core typecheck && pnpm --filter @orange-monitor/collector-api typecheck && pnpm --filter @orange-monitor/monitor-web typecheck",
     "start": "pnpm build && pnpm --filter @orange-monitor/collector-api start"
-  }
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ]
 }
