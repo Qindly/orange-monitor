@@ -1,29 +1,29 @@
 import { addPromiseErrorObserver } from '../observers/global';
 import type { Handler, MonitorClient } from '../types';
 
-type ReasonResult = { message: string; stack?: string };
+type ReasonResult = { message: string; stack?: string; type: string };
 
-// 每个解析器：能处理返回结果，不能处理返回 null
+
 const reasonParsers: Array<(reason: unknown) => ReasonResult | null> = [
   (r) =>
     r instanceof Error
-      ? { message: r.message, stack: r.stack }
+      ? { message: r.message, stack: r.stack, type: r.name || 'Error' }
       : null,
 
   (r) =>
     typeof r === 'string'
-      ? { message: r }
+      ? { message: r, type: 'UnhandledRejectionError' }
       : null,
 
   (r) => {
     try {
-      return { message: JSON.stringify(r) };
+      return { message: JSON.stringify(r), type: 'UnhandledRejectionError' };
     } catch {
       return null;
     }
   },
 
-  (r) => ({ message: String(r) }),
+  (r) => ({ message: String(r), type: 'UnhandledRejectionError' }),
 ];
 
 function extractReason(reason: unknown): ReasonResult {
@@ -32,17 +32,20 @@ function extractReason(reason: unknown): ReasonResult {
     if (result) return result;
   }
 
-  return { message: 'Unknown reason' };
+  return { message: 'Unknown reason', type: 'UnhandledRejectionError' };
 }
 
 export const promiseErrorHandler = (): Handler => ({
   name: 'PromiseError',
   setup(client: MonitorClient) {
     addPromiseErrorObserver(({ reason }) => {
-      const { message, stack } = extractReason(reason);
+      const { message, stack, type } = extractReason(reason);
 
       client.capture({
-        type: 'promise_error',
+        eventSource: 'promise_error',
+        category: 'js',
+        type,
+        title: `${type}: ${message}`,
         message,
         stack,
         details: {
@@ -50,7 +53,6 @@ export const promiseErrorHandler = (): Handler => ({
           runtime: {
             userAgent: navigator.userAgent,
             language: navigator.language,
-            
           },
         },
       });

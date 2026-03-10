@@ -1,13 +1,19 @@
 import { addJSErrorObserver } from '../observers/global';
 import type { Handler, MonitorClient } from '../types';
 
+
 export const jsErrorHandler = (): Handler => ({
   name: 'JSError',
   setup(client: MonitorClient) {
     addJSErrorObserver(({ message, filename, lineno, colno, error }) => {
-      const errorMessage = message || 'Unknown JS Error';
+      const errorMessage = message || error?.message || 'Unknown JS Error';
+      const errorType = error?.name || 'Error';
+
       client.capture({
-        type: 'js_error',
+        eventSource: 'js_error',
+        category: 'js',
+        type: errorType,
+        title: `${errorType}: ${errorMessage}`,
         message: errorMessage,
         filename,
         lineno,
@@ -17,7 +23,6 @@ export const jsErrorHandler = (): Handler => ({
           runtime: {
             userAgent: navigator.userAgent,
             language: navigator.language,
-            
           },
         },
       });

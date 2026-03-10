@@ -2,13 +2,17 @@ import { addFetchObserver, type FetchData } from '../observers/fetch';
 import { addXhrObserver, type XhrData } from '../observers/xhr';
 import type { Handler, MonitorClient, CaptureInput } from '../types';
 
+
 function buildFromFetch(data: FetchData): CaptureInput | null {
   const { url, method, startTime, endTime, response, error } = data;
   const duration = endTime - startTime;
 
   if (error) {
     return {
-      type: 'http_error',
+      eventSource: 'http_error',
+      category: 'api',
+      type: 'NetworkError',
+      title: 'NetworkError',
       message: error instanceof Error ? error.message : 'Fetch network error',
       stack: error instanceof Error ? error.stack : undefined,
       details: {
@@ -21,7 +25,6 @@ function buildFromFetch(data: FetchData): CaptureInput | null {
         runtime: {
           userAgent: navigator.userAgent,
           language: navigator.language,
-
         },
       },
     };
@@ -29,7 +32,10 @@ function buildFromFetch(data: FetchData): CaptureInput | null {
 
   if (response && !response.ok) {
     return {
-      type: 'http_error',
+      eventSource: 'http_error',
+      category: 'api',
+      type: 'HttpError',
+      title: 'HttpError',
       message: `Fetch failed: ${response.status} ${response.statusText}`,
       details: {
         request: {
@@ -57,7 +63,10 @@ function buildFromXhr(data: XhrData): CaptureInput | null {
 
   if (isError) {
     return {
-      type: 'http_error',
+      eventSource: 'http_error',
+      category: 'api',
+      type: 'NetworkError',
+      title: 'NetworkError',
       message: 'XHR network error',
       details: {
         request: {
@@ -69,7 +78,6 @@ function buildFromXhr(data: XhrData): CaptureInput | null {
         runtime: {
           userAgent: navigator.userAgent,
           language: navigator.language,
-        
         },
       },
     };
@@ -77,7 +85,10 @@ function buildFromXhr(data: XhrData): CaptureInput | null {
 
   if (status >= 400) {
     return {
-      type: 'http_error',
+      eventSource: 'http_error',
+      category: 'api',
+      type: 'HttpError',
+      title: 'HttpError',
       message: `XHR failed: ${status} ${statusText}`,
       details: {
         request: {
@@ -91,7 +102,6 @@ function buildFromXhr(data: XhrData): CaptureInput | null {
         runtime: {
           userAgent: navigator.userAgent,
           language: navigator.language,
-
         },
       },
     };

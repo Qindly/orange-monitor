@@ -6,8 +6,8 @@ import type {
 } from './types';
 import { createEventId } from './utils/createEventId';
 import { sendByFetch, sendByBeacon } from './utils/transport';
-import { enrichCaptureInput} from './utils/normalize';
-import { getSessionId} from './utils/session';
+import { enrichCaptureInput } from './utils/normalize';
+import { getSessionId } from './utils/session';
 
 export class MonitorClient {
   private queue: MonitorEventPayload[] = [];
@@ -84,10 +84,12 @@ export class MonitorClient {
   captureException(error: unknown, options?: ManualCaptureOptions): void {
     let message = 'Unknown error';
     let stack: string | undefined;
+    let errorType = 'Error';
 
     if (error instanceof Error) {
       message = error.message;
       stack = error.stack;
+      errorType = error.name || 'Error';
     } else if (typeof error === 'string') {
       message = error;
     } else {
@@ -99,36 +101,44 @@ export class MonitorClient {
     }
 
     this.capture({
-      type: 'manual_error',
-      title: message,
+      eventSource: 'manual_error',
+      type: errorType,
+      title: `${errorType}: ${message}`,
       message,
       stack,
       extra: options?.extra,
-      ...(options?.normalizedMessage ? { normalizedMessage: options.normalizedMessage } : {}),
+      ...(options?.normalizedMessage
+        ? { normalizedMessage: options.normalizedMessage }
+        : {}),
       ...(options?.fingerprint ? { fingerprint: options.fingerprint } : {}),
       details: {
         runtime: {
           userAgent: navigator.userAgent,
           language: navigator.language,
         },
+        ...options?.details,
       },
     });
   }
 
   captureMessage(message: string, options?: ManualCaptureOptions): void {
     this.capture({
-      type: 'manual_message',
+      eventSource: 'manual_message',
       category: 'js',
+      type: 'Message',
       title: message,
       message,
       extra: options?.extra,
-      ...(options?.normalizedMessage ? { normalizedMessage: options.normalizedMessage } : {}),
+      ...(options?.normalizedMessage
+        ? { normalizedMessage: options.normalizedMessage }
+        : {}),
       ...(options?.fingerprint ? { fingerprint: options.fingerprint } : {}),
       details: {
         runtime: {
           userAgent: navigator.userAgent,
           language: navigator.language,
         },
+        ...options?.details,
       },
     });
   }

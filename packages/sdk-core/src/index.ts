@@ -8,7 +8,7 @@ import type { MonitorOptions } from './types';
 export type {
   MonitorOptions,
   MonitorEventPayload,
-  MonitorEventType,
+  MonitorEventSource,
   IssueCategory,
   CaptureInput,
   EventDetails,

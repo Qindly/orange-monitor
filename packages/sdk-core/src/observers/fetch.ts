@@ -16,6 +16,11 @@ export const addFetchObserver = createObserver<FetchData>((trigger) => {
     const { url, method } = resolveFetchArgs(args);
     const startTime = Date.now();
 
+    // 跳过 SDK 自身的上报请求，防止死循环
+    if (url.includes('/ingest')) {
+      return originalFetch(...args);
+    }
+
     try {
       const response = await originalFetch(...args);
       trigger({ url, method, startTime, endTime: Date.now(), response });

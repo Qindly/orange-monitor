@@ -1,12 +1,33 @@
 import { addResourceErrorObserver } from '../observers/global';
 import type { Handler, MonitorClient } from '../types';
 
+
+function getResourceErrorType(tagName?: string): string {
+  const tag = tagName?.toLowerCase();
+
+  switch (tag) {
+    case 'script':
+      return 'ScriptLoadError';
+    case 'img':
+      return 'ImageLoadError';
+    case 'link':
+      return 'StyleLoadError';
+    default:
+      return 'ResourceLoadError';
+  }
+}
+
 export const resourceErrorHandler = (): Handler => ({
   name: 'ResourceError',
   setup(client: MonitorClient) {
     addResourceErrorObserver(({ tagName, resourceUrl }) => {
+      const type = getResourceErrorType(tagName);
+
       client.capture({
-        type: 'resource_error',
+        eventSource: 'resource_error',
+        category: 'resource',
+        type,
+        title: `${type}: ${resourceUrl}`,
         message: `Resource load failed: <${tagName}> ${resourceUrl}`,
         filename: resourceUrl,
         details: {
@@ -17,7 +38,6 @@ export const resourceErrorHandler = (): Handler => ({
           runtime: {
             userAgent: navigator.userAgent,
             language: navigator.language,
-            
           },
         },
       });

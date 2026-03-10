@@ -11,6 +11,9 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
+  "dependencies": {
+    "@repo/protocol": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^5.9.3"
   }
