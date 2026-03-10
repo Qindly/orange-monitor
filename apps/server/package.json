@@ -2,12 +2,13 @@
   "name": "@orange-monitor/collector-api",
   "private": true,
   "scripts": {
-    "dev": "tsx watch index.ts",
+    "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@repo/protocol": "workspace:*",
     "cors": "^2.8.5",
     "express": "^4.21.2"
   },
