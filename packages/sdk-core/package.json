@@ -24,7 +24,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\" && tsc -p tsconfig.json",
+    "build": "tsup",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "prepack": "pnpm build"
   },
@@ -39,6 +39,7 @@
   "devDependencies": {
     "@types/error-stack-parser": "^2.0.2",
     "@types/object-hash": "^3.0.6",
+    "tsup": "^8.5.0",
     "typescript": "^5.9.3"
   }
 }
