@@ -1,0 +1,52 @@
+.issue-detail-page {
+  min-height: 100vh;
+  background: var(--color-bg);
+  padding: 24px;
+
+  &__header {
+    background: var(--color-panel);
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  &__subtitle {
+    margin: 8px 0 0;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+  }
+
+  &__meta {
+    margin-top: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--color-text-tertiary);
+  }
+
+  &__section {
+    margin-top: 20px;
+  }
+
+  &__section-title {
+    margin: 0 0 12px;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  &__empty {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    color: var(--color-text-secondary);
+    background: var(--color-bg);
+  }
+}

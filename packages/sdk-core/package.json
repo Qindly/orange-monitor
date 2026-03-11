@@ -1,17 +1,45 @@
 {
   "name": "@orange-monitor/sdk-core",
-  "private": true,
+  "version": "0.1.0",
+  "description": "Browser error monitoring SDK for Orange Monitor.",
+  "keywords": ["monitoring", "error-tracking", "frontend", "sdk"],
+  "author": "Qindy",
+  "license": "MIT",
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "build": "tsup",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {
+    "@orange-monitor/protocol": "workspace:*",
+    "error-stack-parser": "^2.1.4",
+    "nanoid": "^5.1.6",
+    "object-hash": "^3.0.0",
+    "safe-stable-stringify": "^2.5.0",
+    "serialize-error": "^13.0.1"
   },
   "devDependencies": {
+    "@types/error-stack-parser": "^2.0.2",
+    "@types/object-hash": "^3.0.6",
+    "tsup": "^8.5.0",
     "typescript": "^5.9.3"
   }
 }

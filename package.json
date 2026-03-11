@@ -6,8 +6,19 @@
     "dev": "pnpm -r --parallel --filter @orange-monitor/collector-api --filter @orange-monitor/monitor-web dev",
     "dev:server": "pnpm --filter @orange-monitor/collector-api dev",
     "dev:web": "pnpm --filter @orange-monitor/monitor-web dev",
-    "build": "pnpm --filter @orange-monitor/sdk-core build && pnpm --filter @orange-monitor/collector-api build && pnpm --filter @orange-monitor/monitor-web build",
-    "typecheck": "pnpm --filter @orange-monitor/sdk-core typecheck && pnpm --filter @orange-monitor/collector-api typecheck && pnpm --filter @orange-monitor/monitor-web typecheck",
-    "start": "pnpm build && pnpm --filter @orange-monitor/collector-api start"
-  }
+    "build": "pnpm --filter @orange-monitor/protocol build && pnpm --filter @orange-monitor/sdk-core build && pnpm --filter @orange-monitor/collector-api build && pnpm --filter @orange-monitor/monitor-web build",
+    "typecheck": "pnpm --filter @orange-monitor/protocol typecheck && pnpm --filter @orange-monitor/sdk-core typecheck && pnpm --filter @orange-monitor/collector-api typecheck && pnpm --filter @orange-monitor/monitor-web typecheck",
+    "build:packages": "pnpm --filter @orange-monitor/protocol build && pnpm --filter @orange-monitor/sdk-core build",
+    "typecheck:packages": "pnpm --filter @orange-monitor/protocol typecheck && pnpm --filter @orange-monitor/sdk-core typecheck",
+    "release:check": "pnpm build:packages && pnpm typecheck:packages",
+    "release:pack": "node -e \"require('fs').mkdirSync('.artifacts', { recursive: true })\" && pnpm --filter @orange-monitor/protocol pack --pack-destination ./.artifacts && pnpm --filter @orange-monitor/sdk-core pack --pack-destination ./.artifacts",
+    "release:publish": "pnpm --filter @orange-monitor/protocol publish --access public && pnpm --filter @orange-monitor/sdk-core publish --access public",
+    "start": "pnpm build && pnpm --filter @orange-monitor/collector-api start",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ]
 }

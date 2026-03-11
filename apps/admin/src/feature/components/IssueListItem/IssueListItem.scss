@@ -1,0 +1,57 @@
+.issue-list-item {
+  display: block;
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.18s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-brand-soft);
+    box-shadow: var(--shadow-md);
+  }
+
+  &__top {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  &__main {
+    min-width: 0;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  &__message {
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    word-break: break-word;
+  }
+
+  &__status {
+    flex-shrink: 0;
+    font-size: 12px;
+    color: var(--color-brand);
+    background: var(--color-brand-light);
+    padding: 6px 10px;
+    border-radius: 999px;
+  }
+
+  &__meta {
+    margin-top: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--color-text-tertiary);
+  }
+}

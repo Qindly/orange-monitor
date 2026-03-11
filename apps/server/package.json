@@ -2,20 +2,35 @@
   "name": "@orange-monitor/collector-api",
   "private": true,
   "scripts": {
-    "dev": "tsx watch index.ts",
+    "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "build": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\" && tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate:dev": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:studio": "prisma studio"
   },
   "dependencies": {
+    "@orange-monitor/protocol": "workspace:*",
+    "@prisma/client": "^6.5.0",
     "cors": "^2.8.5",
-    "express": "^4.21.2"
+    "dayjs": "^1.11.19",
+    "dotenv": "^16.6.1",
+    "error-stack-parser": "^2.1.4",
+    "express": "^4.21.2",
+    "nanoid": "^5.1.6",
+    "object-hash": "^3.0.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^4.17.21",
     "@types/node": "^22.15.21",
+    "@types/object-hash": "^3.0.6",
+    "prisma": "^6.5.0",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   }
 }
+

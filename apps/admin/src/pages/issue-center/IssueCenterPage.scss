@@ -1,0 +1,40 @@
+.issue-center-page {
+  min-height: 100vh;
+  background: var(--color-bg);
+
+  &__layout {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    min-height: 100vh;
+  }
+
+  &__sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+
+  &__content {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  &__header {
+    margin-bottom: 4px;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 28px;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+
+  &__subtitle {
+    margin: 8px 0 0;
+    font-size: 14px;
+    color: var(--color-text-secondary);
+  }
+}
