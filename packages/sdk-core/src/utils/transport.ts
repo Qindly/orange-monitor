@@ -1,3 +1,5 @@
+import stringify from 'safe-stable-stringify';
+
 export type TransportPayload = {
   projectId: string;
   events: unknown[];
@@ -8,13 +10,15 @@ export async function sendByFetch(dsn: string, payload: TransportPayload): Promi
   const res = await fetch(dsn, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    body: stringify(payload),
   });
   if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
 }
 
 export function sendByBeacon(dsn: string, payload: TransportPayload): boolean {
   if (!navigator.sendBeacon) return false;
-  const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+  const jsonString = stringify(payload);
+  if (!jsonString) return false;
+  const blob = new Blob([jsonString], { type: 'application/json' });
   return navigator.sendBeacon(dsn, blob);
 }

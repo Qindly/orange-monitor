@@ -4,6 +4,8 @@ import type {
   MonitorEventSource,
   IssueCategory,
 } from '../types';
+import ErrorStackParser from 'error-stack-parser';
+import hash from 'object-hash';
 
 type EnrichedCaptureInput = Omit<
   MonitorEventPayload,
@@ -52,11 +54,27 @@ export function normalizeMessage(message: string): string {
 
 export function getStackFrames(stack?: string): string[] {
   if (!stack) return [];
-  return stack
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .filter((line) => !/^error/i.test(line));
+
+  try {
+    // 尝试使用 error-stack-parser 解析
+    const fakeError = { stack } as Error;
+    const frames = ErrorStackParser.parse(fakeError);
+    return frames.map(frame => {
+      const parts = [];
+      if (frame.functionName) parts.push(`at ${frame.functionName}`);
+      if (frame.fileName) {
+        parts.push(`(${frame.fileName}:${frame.lineNumber || '?'}:${frame.columnNumber || '?'})`);
+      }
+      return parts.join(' ');
+    });
+  } catch {
+    // 降级到简单的字符串分割
+    return stack
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .filter((line) => !/^error/i.test(line));
+  }
 }
 
 export function getStackTopFrame(stack?: string): string {
@@ -72,12 +90,7 @@ function cleanStackFrame(frame: string): string {
 }
 
 function hashString(input: string): string {
-  let hash = 0;
-  for (let i = 0; i < input.length; i += 1) {
-    hash = (hash << 5) - hash + input.charCodeAt(i);
-    hash |= 0;
-  }
-  return `fp_${Math.abs(hash)}`;
+  return `fp_${hash(input, { algorithm: 'md5', encoding: 'hex' }).substring(0, 16)}`;
 }
 
 export function buildFingerprint(input: {

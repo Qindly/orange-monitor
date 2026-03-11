@@ -8,6 +8,8 @@ import { createEventId } from './utils/createEventId';
 import { sendByFetch, sendByBeacon } from './utils/transport';
 import { enrichCaptureInput } from './utils/normalize';
 import { getSessionId } from './utils/session';
+import { serializeError } from 'serialize-error';
+import stringify from 'safe-stable-stringify';
 
 export class MonitorClient {
   private queue: MonitorEventPayload[] = [];
@@ -82,23 +84,11 @@ export class MonitorClient {
 
 
   captureException(error: unknown, options?: ManualCaptureOptions): void {
-    let message = 'Unknown error';
-    let stack: string | undefined;
-    let errorType = 'Error';
+    const serialized = serializeError(error);
 
-    if (error instanceof Error) {
-      message = error.message;
-      stack = error.stack;
-      errorType = error.name || 'Error';
-    } else if (typeof error === 'string') {
-      message = error;
-    } else {
-      try {
-        message = JSON.stringify(error);
-      } catch {
-        message = String(error);
-      }
-    }
+    const message = serialized.message || 'Unknown error';
+    const stack = serialized.stack;
+    const errorType = serialized.name || 'Error';
 
     this.capture({
       eventSource: 'manual_error',

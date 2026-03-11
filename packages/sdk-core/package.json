@@ -12,9 +12,16 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@repo/protocol": "workspace:*"
+    "@repo/protocol": "workspace:*",
+    "error-stack-parser": "^2.1.4",
+    "nanoid": "^5.1.6",
+    "object-hash": "^3.0.0",
+    "safe-stable-stringify": "^2.5.0",
+    "serialize-error": "^13.0.1"
   },
   "devDependencies": {
+    "@types/error-stack-parser": "^2.0.2",
+    "@types/object-hash": "^3.0.6",
     "typescript": "^5.9.3"
   }
 }

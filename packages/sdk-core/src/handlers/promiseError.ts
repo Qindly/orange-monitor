@@ -1,38 +1,31 @@
 import { addPromiseErrorObserver } from '../observers/global';
 import type { Handler, MonitorClient } from '../types';
+import { serializeError } from 'serialize-error';
 
 type ReasonResult = { message: string; stack?: string; type: string };
 
 
-const reasonParsers: Array<(reason: unknown) => ReasonResult | null> = [
-  (r) =>
-    r instanceof Error
-      ? { message: r.message, stack: r.stack, type: r.name || 'Error' }
-      : null,
-
-  (r) =>
-    typeof r === 'string'
-      ? { message: r, type: 'UnhandledRejectionError' }
-      : null,
-
-  (r) => {
-    try {
-      return { message: JSON.stringify(r), type: 'UnhandledRejectionError' };
-    } catch {
-      return null;
-    }
-  },
-
-  (r) => ({ message: String(r), type: 'UnhandledRejectionError' }),
-];
-
 function extractReason(reason: unknown): ReasonResult {
-  for (const parser of reasonParsers) {
-    const result = parser(reason);
-    if (result) return result;
+  // 使用 serialize-error 统一序列化
+  const serialized = serializeError(reason);
+
+  if (serialized.name && serialized.message) {
+    return {
+      message: serialized.message,
+      stack: serialized.stack,
+      type: serialized.name,
+    };
   }
 
-  return { message: 'Unknown reason', type: 'UnhandledRejectionError' };
+  // 降级处理
+  if (typeof reason === 'string') {
+    return { message: reason, type: 'UnhandledRejectionError' };
+  }
+
+  return {
+    message: serialized.message || 'Unknown reason',
+    type: 'UnhandledRejectionError'
+  };
 }
 
 export const promiseErrorHandler = (): Handler => ({

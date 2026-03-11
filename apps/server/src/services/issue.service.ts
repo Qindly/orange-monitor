@@ -2,10 +2,7 @@ import type { IssueEntity, NormalizedIncomingEvent } from '../types';
 import { toNewIssueEntity } from '../domain/mapper';
 import { findIssueByGroupingKey, insertIssue, updateIssue } from '../repositories/issue.repository';
 import { registerAffectedPage, registerAffectedUser } from '../repositories/stats.repository';
-
-function createId(): string {
-  return `issue_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-}
+import { createId } from '../utils/id';
 
 export async function getOrCreateIssue(event: NormalizedIncomingEvent): Promise<IssueEntity> {
   const now = Date.now();
@@ -13,7 +10,7 @@ export async function getOrCreateIssue(event: NormalizedIncomingEvent): Promise<
 
   if (!existing) {
     const issue = toNewIssueEntity({
-      id: createId(),
+      id: createId('issue'),
       event,
       now,
     });

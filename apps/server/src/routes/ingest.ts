@@ -1,20 +1,31 @@
+import { ZodError } from 'zod';
 import type { Request, Response } from 'express';
 import { ingestEvents } from '../services/ingest.service';
+import { IngestRequestSchema } from '../schemas/ingest.schema';
 
 export async function ingestHandler(req: Request, res: Response): Promise<void> {
-  const events = req.body?.events;
+  try {
+    const validated = IngestRequestSchema.parse(req.body);
 
-  if (!Array.isArray(events)) {
-    res.status(400).json({
-      success: false,
-      message: 'events must be an array',
+    await ingestEvents(validated.events);
+
+    res.json({
+      success: true,
     });
-    return;
+  } catch (error) {
+    if (error instanceof ZodError) {
+      res.status(400).json({
+        success: false,
+        message: 'Invalid request body',
+        errors: error.flatten(),
+      });
+      return;
+    }
+
+    console.error('[ingest] failed to process events', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
   }
-
-  await ingestEvents(events);
-
-  res.json({
-    success: true,
-  });
 }
