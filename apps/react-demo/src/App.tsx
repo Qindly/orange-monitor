@@ -1,4 +1,10 @@
-import { monitor } from './main';
+
+import { initMonitor } from '@orange-monitor/sdk-core';
+
+const monitor = initMonitor({
+  dsn: 'http://localhost:3000/ingest',
+  projectId: 'react-demo',
+});
 
 function App() {
   const handleJsError = () => {

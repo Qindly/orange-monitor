@@ -63,8 +63,8 @@ importers:
   apps/react-demo:
     dependencies:
       '@orange-monitor/sdk-core':
-        specifier: workspace:*
-        version: link:../../packages/sdk-core
+        specifier: ^0.1.0
+        version: 0.1.0
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -637,6 +637,12 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@orange-monitor/protocol@0.1.0':
+    resolution: {integrity: sha512-HDFSJW/61zCAH/xCWmsDXB9yzkLzPt+GmETjVx3XEbGrzZfwOFhAYl1f+EVtMU4N669tAllwXhfYNuioJgHmuQ==}
+
+  '@orange-monitor/sdk-core@0.1.0':
+    resolution: {integrity: sha512-EOVIxtQgwfyy0bn1EDe4lUvyWHW4g5hodMGhgwOeiAy9VVMoHMC+IiM245wOsxSBzcSkKGxKyvhixVcN8RqzIg==}
 
   '@parcel/watcher-android-arm64@2.5.6':
     resolution: {integrity: sha512-YQxSS34tPF/6ZG7r/Ih9xy+kP/WwediEUsqmtf0cuCV5TPPKw/PQHRhueUo6JdeFJaqV3pyjm0GdYjZotbRt/A==}
@@ -2692,6 +2698,17 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@orange-monitor/protocol@0.1.0': {}
+
+  '@orange-monitor/sdk-core@0.1.0':
+    dependencies:
+      '@orange-monitor/protocol': 0.1.0
+      error-stack-parser: 2.1.4
+      nanoid: 5.1.6
+      object-hash: 3.0.0
+      safe-stable-stringify: 2.5.0
+      serialize-error: 13.0.1
 
   '@parcel/watcher-android-arm64@2.5.6':
     optional: true

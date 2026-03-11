@@ -15,7 +15,8 @@
     "release:publish": "pnpm --filter @orange-monitor/protocol publish --access public && pnpm --filter @orange-monitor/sdk-core publish --access public",
     "start": "pnpm build && pnpm --filter @orange-monitor/collector-api start",
     "db:up": "docker compose up -d postgres",
-    "db:down": "docker compose down"
+    "db:down": "docker compose down",
+    "db:clear": "docker exec orange-monitor-postgres psql -U orange_monitor -d orange_monitor -c \"TRUNCATE TABLE \\\"Event\\\", \\\"IssueUser\\\", \\\"IssuePage\\\", \\\"Issue\\\" RESTART IDENTITY CASCADE;\""
   },
   "workspaces": [
     "packages/*",
