@@ -16,6 +16,8 @@ export async function getOrCreateIssue(event: NormalizedIncomingEvent): Promise<
     });
 
     await insertIssue(issue);
+    await registerAffectedUser(issue.id, event.userId);
+    await registerAffectedPage(issue.id, event.pageKey);
     return issue;
   }
 

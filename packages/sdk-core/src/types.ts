@@ -9,10 +9,9 @@ export type { EventDetails, IssueCategory, MonitorEventPayload, MonitorEventSour
 export interface MonitorOptions {
   dsn: string; // 上报地址，必填项
   projectId: string;
+  userId?: string; // 用户标识，可选
   batchSize?: number; // 累计到多少就上报
   flushInterval?: number; // 刷新间隔
-  // dedupeWindow?: number; // 去重窗口时间
-  // dedupeBySession?: boolean; // 是否按会话去重
   Handlers?: Handler[];
 }
 

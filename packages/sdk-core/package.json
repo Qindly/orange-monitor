@@ -1,5 +1,9 @@
 {
   "name": "@orange-monitor/sdk-core",
+  "version": "0.0.1",
+  "description": "前端异常监控 SDK",
+  "keywords": ["监控", "异常", "sdk", "error-tracking"],
+  "author": "Qindy",
   "private": true,
   "type": "module",
   "main": "./src/index.ts",

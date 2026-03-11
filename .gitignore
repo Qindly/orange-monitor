@@ -6,3 +6,6 @@ dist
 CLAUDE.md
 REASUME.md
 .continue
+.env
+.env.*
+!.env.example

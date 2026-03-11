@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum IssueCategory {
+  js
+  api
+  resource
+}
+
+enum IssueStatus {
+  open
+  resolved
+  ignored
+}
+
+model Issue {
+  id                String        @id
+  projectId         String
+  groupingKey       String
+  category          IssueCategory
+  type              String
+  title             String
+  normalizedMessage String
+  eventCount        Int
+  affectedPages     Int
+  affectedUsers     Int
+  firstSeenAt       BigInt
+  lastSeenAt        BigInt
+  status            IssueStatus   @default(open)
+  createdAt         BigInt
+  updatedAt         BigInt
+  details           Json?
+  events            Event[]
+  users             IssueUser[]
+  pages             IssuePage[]
+
+  @@unique([projectId, groupingKey], map: "issue_project_grouping_key_unique")
+  @@index([projectId, lastSeenAt(sort: Desc)], map: "issue_project_last_seen_idx")
+}
+
+model Event {
+  id                String        @id
+  eventId           String
+  issueId           String
+  projectId         String
+  fingerprint       String
+  groupingKey       String
+  category          IssueCategory
+  type              String
+  title             String
+  message           String
+  normalizedMessage String
+  rawStack          String?
+  stackFrames       Json?
+  stackTopFrame     String?
+  filename          String?
+  lineno            Int?
+  colno             Int?
+  timestamp         BigInt
+  url               String
+  path              String?
+  pageKey           String?
+  userId            String?
+  sessionId         String?
+  tags              Json?
+  extra             Json?
+  details           Json?
+  createdAt         BigInt
+
+  issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@index([issueId, timestamp(sort: Desc)], map: "event_issue_timestamp_idx")
+  @@index([projectId], map: "event_project_idx")
+}
+
+model IssueUser {
+  issueId    String
+  userId     String
+  createdAt  BigInt
+  issue      Issue  @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@id([issueId, userId])
+}
+
+model IssuePage {
+  issueId    String
+  pageKey    String
+  createdAt  BigInt
+  issue      Issue  @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@id([issueId, pageKey])
+}

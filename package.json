@@ -8,7 +8,9 @@
     "dev:web": "pnpm --filter @orange-monitor/monitor-web dev",
     "build": "pnpm --filter @orange-monitor/sdk-core build && pnpm --filter @orange-monitor/collector-api build && pnpm --filter @orange-monitor/monitor-web build",
     "typecheck": "pnpm --filter @orange-monitor/sdk-core typecheck && pnpm --filter @orange-monitor/collector-api typecheck && pnpm --filter @orange-monitor/monitor-web typecheck",
-    "start": "pnpm build && pnpm --filter @orange-monitor/collector-api start"
+    "start": "pnpm build && pnpm --filter @orange-monitor/collector-api start",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down"
   },
   "workspaces": [
     "packages/*",

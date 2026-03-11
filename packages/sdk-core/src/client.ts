@@ -14,18 +14,30 @@ import stringify from 'safe-stable-stringify';
 export class MonitorClient {
   private queue: MonitorEventPayload[] = [];
   private timer: ReturnType<typeof setInterval> | null = null;
-  private options: Required<Omit<MonitorOptions, 'Handlers'>>;
+  private options: Required<Omit<MonitorOptions, 'Handlers' | 'userId'>>;
   private sessionId: string;
+  private userId?: string;
 
   constructor(options: MonitorOptions) {
+    const { userId, Handlers, ...rest } = options;
     this.options = {
       batchSize: 3,
       flushInterval: 5000,
-      // dedupeWindow: 10000,
-      // dedupeBySession: true,
-      ...options,
+      ...rest,
     };
 
+    this.sessionId = getSessionId();
+    this.userId = userId;
+  }
+
+  setUser(userId: string | undefined): void {
+    this.userId = userId;
+  }
+
+  resetSession(): void {
+    try {
+      sessionStorage.removeItem('__monitor_session_id__');
+    } catch {}
     this.sessionId = getSessionId();
   }
 
@@ -39,6 +51,7 @@ export class MonitorClient {
       timestamp: now,
       url: window.location.href,
       sessionId: this.sessionId,
+      ...(this.userId ? { userId: this.userId } : {}),
       ...enrichedInput,
     };
 
