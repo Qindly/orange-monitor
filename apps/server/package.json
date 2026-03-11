@@ -12,7 +12,7 @@
     "prisma:studio": "prisma studio"
   },
   "dependencies": {
-    "@repo/protocol": "workspace:*",
+    "@orange-monitor/protocol": "workspace:*",
     "@prisma/client": "^6.5.0",
     "cors": "^2.8.5",
     "dayjs": "^1.11.19",
@@ -33,3 +33,4 @@
     "typescript": "^5.9.3"
   }
 }
+

@@ -1,7 +1,7 @@
 import { buildPageKey, extractPath } from './page';
 import { parseStackFrames, getTopFrameText } from './stack';
 import { computeGroupingKey } from './grouping';
-import type { MonitorEventPayload } from '@repo/protocol';
+import type { MonitorEventPayload } from '@orange-monitor/protocol';
 import type { NormalizedIncomingEvent } from '../types';
 
 export function normalizeIncomingEvent(payload: MonitorEventPayload): NormalizedIncomingEvent {

@@ -49,3 +49,30 @@ pnpm --filter @orange-monitor/collector-api dev
 curl http://localhost:3000/health
 curl http://localhost:3000/issues
 ```
+
+## NPM Package Release
+
+Publishable packages:
+
+- `@orange-monitor/protocol`
+- `@orange-monitor/sdk-core`
+
+### 1. Build and check packages
+
+```bash
+pnpm release:check
+```
+
+### 2. Inspect package tarballs before publish
+
+```bash
+pnpm release:pack
+```
+
+Tarballs are generated in `.artifacts/`.
+
+### 3. Publish (first time with public access)
+
+```bash
+pnpm release:publish
+```

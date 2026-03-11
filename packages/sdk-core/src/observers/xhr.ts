@@ -22,12 +22,26 @@ export const addXhrObserver = createObserver<XhrData>((trigger) => {
   const originalOpen = XMLHttpRequest.prototype.open;
   const originalSend = XMLHttpRequest.prototype.send;
 
-  XMLHttpRequest.prototype.open = function (method, url, ...rest) {
+  XMLHttpRequest.prototype.open = function (
+    method: string,
+    url: string | URL,
+    async?: boolean,
+    username?: string | null,
+    password?: string | null
+  ) {
     (this as any)[XHR_META_KEY] = {
       url: String(url),
       method: method.toUpperCase(),
     } satisfies Partial<XhrMeta>;
-    return originalOpen.call(this, method, url, ...(rest as any));
+
+    return originalOpen.call(
+      this,
+      method,
+      url,
+      async ?? true,
+      username ?? undefined,
+      password ?? undefined
+    );
   };
 
   XMLHttpRequest.prototype.send = function (body) {

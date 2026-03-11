@@ -9,3 +9,4 @@ REASUME.md
 .env
 .env.*
 !.env.example
+.artifacts

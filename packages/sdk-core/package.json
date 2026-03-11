@@ -1,22 +1,35 @@
 {
   "name": "@orange-monitor/sdk-core",
-  "version": "0.0.1",
-  "description": "前端异常监控 SDK",
-  "keywords": ["监控", "异常", "sdk", "error-tracking"],
+  "version": "0.1.0",
+  "description": "Browser error monitoring SDK for Orange Monitor.",
+  "keywords": ["monitoring", "error-tracking", "frontend", "sdk"],
   "author": "Qindy",
-  "private": true,
+  "license": "MIT",
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "build": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\" && tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepack": "pnpm build"
   },
   "dependencies": {
-    "@repo/protocol": "workspace:*",
+    "@orange-monitor/protocol": "workspace:*",
     "error-stack-parser": "^2.1.4",
     "nanoid": "^5.1.6",
     "object-hash": "^3.0.0",

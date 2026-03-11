@@ -1,9 +1,6 @@
-import type {
-  IssueCategory,
-  MonitorEventPayload,
-} from '@repo/protocol';
+import type { IssueCategory, MonitorEventPayload } from '@orange-monitor/protocol';
 
-export type { MonitorEventPayload } from '@repo/protocol';
+export type { MonitorEventPayload } from '@orange-monitor/protocol';
 
 export interface StackFrame {
   filename?: string;

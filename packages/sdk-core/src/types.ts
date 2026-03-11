@@ -3,8 +3,8 @@ import type {
   IssueCategory,
   MonitorEventPayload,
   MonitorEventSource,
-} from '@repo/protocol';
-export type { EventDetails, IssueCategory, MonitorEventPayload, MonitorEventSource } from '@repo/protocol';
+} from '@orange-monitor/protocol';
+export type { EventDetails, IssueCategory, MonitorEventPayload, MonitorEventSource } from '@orange-monitor/protocol';
 
 export interface MonitorOptions {
   dsn: string; // 上报地址，必填项
