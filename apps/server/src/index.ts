@@ -2,6 +2,8 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { ingestHandler } from './routes/ingest';
+import { uploadSourceMapsHandler } from './routes/sourcemaps';
+import { symbolicateStackHandler } from './routes/symbolicate';
 import { listIssues } from './repositories/issue.repository';
 import { listEventsByIssueId } from './repositories/event.repository';
 import { prisma } from './lib/prisma';
@@ -9,13 +11,15 @@ import { prisma } from './lib/prisma';
 const app = express();
 
 app.use(cors());
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({ limit: '20mb' }));
 
 app.get('/health', (_req, res) => {
   res.json({ success: true });
 });
 
 app.post('/ingest', ingestHandler);
+app.post('/projects/:projectId/sourcemaps', uploadSourceMapsHandler);
+app.post('/projects/:projectId/symbolicate', symbolicateStackHandler);
 
 app.get('/issues', async (_req, res) => {
   try {

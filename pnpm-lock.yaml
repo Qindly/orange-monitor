@@ -117,6 +117,9 @@ importers:
       object-hash:
         specifier: ^3.0.0
         version: 3.0.0
+      source-map-js:
+        specifier: ^1.2.1
+        version: 1.2.1
       zod:
         specifier: ^4.3.6
         version: 4.3.6

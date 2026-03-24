@@ -32,6 +32,7 @@ export interface MonitorEventPayload {
   // 事件本身
   eventId: string;
   projectId: string;
+  release?: string;
 
   // 用于展示的具体异常类型名
   // 例如：

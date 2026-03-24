@@ -10,3 +10,4 @@ REASUME.md
 .env.*
 !.env.example
 .artifacts
+.data

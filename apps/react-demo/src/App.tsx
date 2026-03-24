@@ -4,6 +4,7 @@ import { initMonitor } from '@orange-monitor/sdk-core';
 const monitor = initMonitor({
   dsn: 'http://localhost:3000/ingest',
   projectId: 'react-demo',
+  release: 'local-test',
 });
 
 function App() {
@@ -70,6 +71,14 @@ function App() {
     xhr.send();
   };
 
+  const handleMinifiedBundleError = async () => {
+    const { createMinifiedCrashTask } = await import('./minifiedCrash');
+    const crashTask = createMinifiedCrashTask();
+    setTimeout(() => {
+      crashTask();
+    }, 0);
+  };
+
   const handleFlush = () => {
     monitor.flush();
   };
@@ -78,6 +87,7 @@ function App() {
     <div style={{ padding: 24 }}>
       <h1>playground-react</h1>
       <p>测试多场景异常捕获与批量上报</p>
+      <p>建议通过 build + preview 访问，再点击“触发压缩后异常(需 Source Map 还原)”按钮。</p>
 
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
         <button onClick={handleJsError}>触发 JS 报错</button>
@@ -91,6 +101,7 @@ function App() {
         <button onClick={handleFetchNetworkError}>触发 fetch 网络错误</button>
         <button onClick={handleXhrHttpError}>触发 xhr 404</button>
         <button onClick={handleXhrNetworkError}>触发 xhr 网络错误</button>
+        <button onClick={handleMinifiedBundleError}>触发压缩后异常(需 Source Map 还原)</button>
         <button onClick={handleFlush}>手动 flush</button>
       </div>
     </div>

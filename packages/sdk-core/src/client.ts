@@ -11,10 +11,15 @@ import { getSessionId } from './utils/session';
 import { serializeError } from 'serialize-error';
 import stringify from 'safe-stable-stringify';
 
+type InternalMonitorOptions = Omit<MonitorOptions, 'Handlers' | 'userId'> & {
+  batchSize: number;
+  flushInterval: number;
+};
+
 export class MonitorClient {
   private queue: MonitorEventPayload[] = [];
   private timer: ReturnType<typeof setInterval> | null = null;
-  private options: Required<Omit<MonitorOptions, 'Handlers' | 'userId'>>;
+  private options: InternalMonitorOptions;
   private sessionId: string;
   private userId?: string;
 
@@ -48,6 +53,7 @@ export class MonitorClient {
     const event: MonitorEventPayload = {
       eventId: createEventId(),
       projectId: this.options.projectId,
+      release: this.options.release,
       timestamp: now,
       url: window.location.href,
       sessionId: this.sessionId,

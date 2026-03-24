@@ -9,6 +9,7 @@ export type { EventDetails, IssueCategory, MonitorEventPayload, MonitorEventSour
 export interface MonitorOptions {
   dsn: string; // 上报地址，必填项
   projectId: string;
+  release?: string;
   userId?: string; // 用户标识，可选
   batchSize?: number; // 累计到多少就上报
   flushInterval?: number; // 刷新间隔
@@ -47,6 +48,7 @@ export type CaptureInput = Omit<
   MonitorEventPayload,
   | 'eventId'
   | 'projectId'
+  | 'release'
   | 'timestamp'
   | 'url'
   | 'sessionId'
