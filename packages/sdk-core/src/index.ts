@@ -13,8 +13,13 @@ export type {
   CaptureInput,
   EventDetails,
   ManualCaptureOptions,
+  Handler,
 } from './types';
 export { MonitorClient } from './client';
+export { jsErrorHandler } from './handlers/jsError';
+export { promiseErrorHandler } from './handlers/promiseError';
+export { resourceErrorHandler } from './handlers/resourceError';
+export { httpErrorHandler } from './handlers/httpError';
 
 const defaultHandlers = [
   jsErrorHandler(),

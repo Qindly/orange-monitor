@@ -9,12 +9,23 @@ import { sendByFetch, sendByBeacon } from './utils/transport';
 import { enrichCaptureInput } from './utils/normalize';
 import { getSessionId } from './utils/session';
 import { serializeError } from 'serialize-error';
-import stringify from 'safe-stable-stringify';
+
 
 type InternalMonitorOptions = Omit<MonitorOptions, 'Handlers' | 'userId'> & {
   batchSize: number;
   flushInterval: number;
 };
+
+function matchesPattern(value: string, pattern: string | RegExp): boolean {
+  if (typeof pattern === 'string') {
+    return value.includes(pattern);
+  }
+  return pattern.test(value);
+}
+
+function matchesAny(value: string, patterns: Array<string | RegExp>): boolean {
+  return patterns.some(p => matchesPattern(value, p));
+}
 
 export class MonitorClient {
   private queue: MonitorEventPayload[] = [];
@@ -47,19 +58,41 @@ export class MonitorClient {
   }
 
   capture(input: CaptureInput): void {
+    const pageUrl = window.location.href;
+
+    // ── 页面级过滤 ──
+    // allowUrls 优先：配置了 allowUrls 时，不在白名单内的页面直接丢弃
+    if (this.options.allowUrls?.length) {
+      if (!matchesAny(pageUrl, this.options.allowUrls)) return;
+    } else if (this.options.denyUrls?.length) {
+      // 仅在未配置 allowUrls 时，denyUrls 才生效
+      if (matchesAny(pageUrl, this.options.denyUrls)) return;
+    }
+
+    // ── 异常消息过滤 ──
+    if (this.options.ignoreErrors?.length && input.message) {
+      if (matchesAny(input.message, this.options.ignoreErrors)) return;
+    }
+
     const enrichedInput = enrichCaptureInput(input);
     const now = Date.now();
 
-    const event: MonitorEventPayload = {
+    let event: MonitorEventPayload | null = {
       eventId: createEventId(),
       projectId: this.options.projectId,
       release: this.options.release,
       timestamp: now,
-      url: window.location.href,
+      url: pageUrl,
       sessionId: this.sessionId,
       ...(this.userId ? { userId: this.userId } : {}),
       ...enrichedInput,
     };
+
+    // ── beforeSend 钩子 ──
+    if (this.options.beforeSend) {
+      event = this.options.beforeSend(event);
+      if (!event) return;
+    }
 
     this.enqueue(event);
   }

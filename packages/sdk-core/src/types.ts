@@ -14,6 +14,17 @@ export interface MonitorOptions {
   batchSize?: number; // 累计到多少就上报
   flushInterval?: number; // 刷新间隔
   Handlers?: Handler[];
+
+  // ── 过滤与屏蔽 ──
+
+  /** 页面屏蔽：匹配当前页面 URL 则不上报（字符串或正则） */
+  denyUrls?: Array<string | RegExp>;
+  /** 页面白名单：仅匹配的页面 URL 才上报（优先级高于 denyUrls） */
+  allowUrls?: Array<string | RegExp>;
+  /** 异常消息过滤：匹配 message 的异常将被丢弃 */
+  ignoreErrors?: Array<string | RegExp>;
+  /** 上报前钩子：返回 null 则丢弃该事件，可修改事件内容 */
+  beforeSend?: (event: MonitorEventPayload) => MonitorEventPayload | null;
 }
 
 // 业务方手动上报时的可选项
