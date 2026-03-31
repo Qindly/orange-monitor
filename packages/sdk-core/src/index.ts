@@ -14,6 +14,7 @@ export type {
   EventDetails,
   ManualCaptureOptions,
   Handler,
+  ThrottleOptions,
 } from './types';
 export { MonitorClient } from './client';
 export { jsErrorHandler } from './handlers/jsError';

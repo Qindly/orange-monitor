@@ -16,6 +16,11 @@ type InternalMonitorOptions = Omit<MonitorOptions, 'Handlers' | 'userId'> & {
   flushInterval: number;
 };
 
+interface ThrottleRecord {
+  count: number;
+  startTime: number;
+}
+
 function matchesPattern(value: string, pattern: string | RegExp): boolean {
   if (typeof pattern === 'string') {
     return value.includes(pattern);
@@ -33,6 +38,7 @@ export class MonitorClient {
   private options: InternalMonitorOptions;
   private sessionId: string;
   private userId?: string;
+  private throttleMap: Map<string, ThrottleRecord> = new Map();
 
   constructor(options: MonitorOptions) {
     const { userId, Handlers, ...rest } = options;
@@ -77,6 +83,11 @@ export class MonitorClient {
     const enrichedInput = enrichCaptureInput(input);
     const now = Date.now();
 
+    // ── 相同异常限流 ──
+    if (this.options.throttle && enrichedInput.fingerprint) {
+      if (this.isThrottled(enrichedInput.fingerprint, now)) return;
+    }
+
     let event: MonitorEventPayload | null = {
       eventId: createEventId(),
       projectId: this.options.projectId,
@@ -106,6 +117,24 @@ export class MonitorClient {
     if (this.queue.length >= this.options.batchSize) {
       this.flush();
     }
+  }
+
+  private isThrottled(fingerprint: string, now: number): boolean {
+    const { timeWindow, maxCount } = this.options.throttle!;
+    const record = this.throttleMap.get(fingerprint);
+
+    if (!record || now - record.startTime >= timeWindow) {
+      // 无记录或窗口已过期，重置计数
+      this.throttleMap.set(fingerprint, { count: 1, startTime: now });
+      return false;
+    }
+
+    record.count++;
+    if (record.count > maxCount) {
+      return true;
+    }
+
+    return false;
   }
 
   async flush(opts?: { useBeacon?: boolean }): Promise<void> {

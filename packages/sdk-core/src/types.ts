@@ -6,6 +6,13 @@ import type {
 } from '@orange-monitor/protocol';
 export type { EventDetails, IssueCategory, MonitorEventPayload, MonitorEventSource } from '@orange-monitor/protocol';
 
+export interface ThrottleOptions {
+  /** 时间窗口（毫秒），在此窗口内对相同异常进行计数 */
+  timeWindow: number;
+  /** 时间窗口内允许上报的最大次数，超出则丢弃 */
+  maxCount: number;
+}
+
 export interface MonitorOptions {
   dsn: string; // 上报地址，必填项
   projectId: string;
@@ -25,6 +32,11 @@ export interface MonitorOptions {
   ignoreErrors?: Array<string | RegExp>;
   /** 上报前钩子：返回 null 则丢弃该事件，可修改事件内容 */
   beforeSend?: (event: MonitorEventPayload) => MonitorEventPayload | null;
+
+  // ── 限流 ──
+
+  /** 相同异常上报限流，不传则不启用限流 */
+  throttle?: ThrottleOptions;
 }
 
 // 业务方手动上报时的可选项
