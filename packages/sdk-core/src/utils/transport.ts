@@ -1,13 +1,13 @@
 import stringify from 'safe-stable-stringify';
 
-export type TransportPayload = {
-  projectId: string;
-  events: unknown[];
-};
-
-// 返回 Promise，让调用方自己决定失败怎么办
-export async function sendByFetch(dsn: string, payload: TransportPayload): Promise<void> {
-  const res = await fetch(dsn, {
+/**
+ * 通用 fetch 上报
+ *
+ * payload 本身就是 Record<string, unknown>，
+ * 由 BufferedQueue 的 buildPayload 负责构建具体结构。
+ */
+export async function send(url: string, payload: Record<string, unknown>): Promise<void> {
+  const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: stringify(payload),
@@ -15,10 +15,15 @@ export async function sendByFetch(dsn: string, payload: TransportPayload): Promi
   if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
 }
 
-export function sendByBeacon(dsn: string, payload: TransportPayload): boolean {
+/**
+ * 通用 Beacon 上报（页面卸载时使用）
+ *
+ * @returns 是否成功调用 navigator.sendBeacon
+ */
+export function sendBeacon(url: string, payload: Record<string, unknown>): boolean {
   if (!navigator.sendBeacon) return false;
   const jsonString = stringify(payload);
   if (!jsonString) return false;
   const blob = new Blob([jsonString], { type: 'application/json' });
-  return navigator.sendBeacon(dsn, blob);
+  return navigator.sendBeacon(url, blob);
 }

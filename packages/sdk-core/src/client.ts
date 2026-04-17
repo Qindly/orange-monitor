@@ -3,9 +3,11 @@ import type {
   MonitorEventPayload,
   CaptureInput,
   ManualCaptureOptions,
+  PerformanceInput,
+  PerformanceMetricPayload,
 } from './types';
 import { createEventId } from './utils/createEventId';
-import { sendByFetch, sendByBeacon } from './utils/transport';
+import { BufferedQueue } from './utils/buffered-queue';
 import { enrichCaptureInput } from './utils/normalize';
 import { getSessionId } from './utils/session';
 import { serializeError } from 'serialize-error';
@@ -14,6 +16,7 @@ import { serializeError } from 'serialize-error';
 type InternalMonitorOptions = Omit<MonitorOptions, 'Handlers' | 'userId'> & {
   batchSize: number;
   flushInterval: number;
+  perfBatchSize: number;
 };
 
 interface ThrottleRecord {
@@ -33,7 +36,8 @@ function matchesAny(value: string, patterns: Array<string | RegExp>): boolean {
 }
 
 export class MonitorClient {
-  private queue: MonitorEventPayload[] = [];
+  private eventQueue: BufferedQueue<MonitorEventPayload>;
+  private perfQueue: BufferedQueue<PerformanceMetricPayload>;
   private timer: ReturnType<typeof setInterval> | null = null;
   private options: InternalMonitorOptions;
   private sessionId: string;
@@ -45,11 +49,34 @@ export class MonitorClient {
     this.options = {
       batchSize: 3,
       flushInterval: 5000,
+      perfBatchSize: 5,
       ...rest,
     };
 
     this.sessionId = getSessionId();
     this.userId = userId;
+
+    // ── 异常事件队列 ──
+    this.eventQueue = new BufferedQueue<MonitorEventPayload>({
+      batchSize: this.options.batchSize,
+      endpoint: this.options.dsn,
+      buildPayload: (items) => ({
+        projectId: this.options.projectId,
+        sessionId: this.sessionId,
+        events: items,
+      }),
+    });
+
+    // ── 性能指标队列 ──
+    this.perfQueue = new BufferedQueue<PerformanceMetricPayload>({
+      batchSize: this.options.perfBatchSize,
+      endpoint: this.options.dsn.replace(/\/ingest\/?$/, '/performance'),
+      buildPayload: (items) => ({
+        projectId: this.options.projectId,
+        sessionId: this.sessionId,
+        metrics: items,
+      }),
+    });
   }
 
   setUser(userId: string | undefined): void {
@@ -105,18 +132,36 @@ export class MonitorClient {
       if (!event) return;
     }
 
-    this.enqueue(event);
+        this.eventQueue.push(event);
   }
+
+  // ── 性能指标采集 ──
+
+  capturePerformance(input: PerformanceInput): void {
+    const metric: PerformanceMetricPayload = {
+      eventId: createEventId(),
+      projectId: this.options.projectId,
+      release: this.options.release,
+      timestamp: Date.now(),
+      url: window.location.href,
+      sessionId: this.sessionId,
+      ...(this.userId ? { userId: this.userId } : {}),
+      ...input,
+    };
+
+    this.perfQueue.push(metric);
+  }
+
+  // ── 定时器 & 生命周期 ──
 
   startTimer(): void {
-    this.timer = setInterval(() => this.flush(), this.options.flushInterval);
+    this.timer = setInterval(() => this.flushAll(), this.options.flushInterval);
   }
 
-  private enqueue(event: MonitorEventPayload): void {
-    this.queue.push(event);
-    if (this.queue.length >= this.options.batchSize) {
-      this.flush();
-    }
+  /** 统一刷新所有队列 */
+  flushAll(opts?: { useBeacon?: boolean }): void {
+    this.eventQueue.flush(opts);
+    this.perfQueue.flush(opts);
   }
 
   private isThrottled(fingerprint: string, now: number): boolean {
@@ -137,30 +182,9 @@ export class MonitorClient {
     return false;
   }
 
+    /** 仅刷新异常事件队列（保留向后兼容） */
   async flush(opts?: { useBeacon?: boolean }): Promise<void> {
-    if (this.queue.length === 0) return;
-
-    const events = [...this.queue];
-    this.queue = [];
-    const payload = {
-      projectId: this.options.projectId,
-      sessionId: this.sessionId,
-      events,
-    };
-
-    if (opts?.useBeacon) {
-      const success = sendByBeacon(this.options.dsn, payload);
-      if (success) {
-        return;
-      }
-    }
-
-    try {
-      await sendByFetch(this.options.dsn, payload);
-    } catch {
-      console.error('[Monitor] 上报失败，回退队列');
-      this.queue.unshift(...events);
-    }
+    return this.eventQueue.flush(opts);
   }
 
 
@@ -214,10 +238,12 @@ export class MonitorClient {
     });
   }
 
-  destroy(): void {
+      destroy(): void {
     if (this.timer) {
       clearInterval(this.timer);
       this.timer = null;
     }
+    // 销毁前通过 beacon 发送所有残留数据
+    this.flushAll({ useBeacon: true });
   }
 }
