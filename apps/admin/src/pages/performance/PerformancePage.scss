@@ -1,0 +1,23 @@
+.performance-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 24px;
+
+  &__header {
+    margin-bottom: 4px;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 28px;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+
+  &__subtitle {
+    margin: 8px 0 0;
+    font-size: 14px;
+    color: var(--color-text-secondary);
+  }
+}
