@@ -31,6 +31,7 @@ const EventDetailsSchema = z
 export const MonitorEventPayloadSchema = z.object({
   eventId: z.string(),
   projectId: z.string(),
+  release: z.string().optional(),
   timestamp: z.number(),
   url: z.string(),
   sessionId: z.string(),

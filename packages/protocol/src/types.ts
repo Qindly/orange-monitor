@@ -32,6 +32,7 @@ export interface MonitorEventPayload {
   // 事件本身
   eventId: string;
   projectId: string;
+  release?: string;
 
   // 用于展示的具体异常类型名
   // 例如：
@@ -81,6 +82,57 @@ export interface MonitorIngestRequest {
 }
 
 export interface MonitorIngestResponse {
+  success: boolean;
+  message?: string;
+}
+
+// ═══════════════════════════════════════════
+// Performance Monitoring
+// ═══════════════════════════════════════════
+
+/** 性能指标名称 */
+export type PerformanceMetricName =
+  | 'FP'        // First Paint
+  | 'FCP'       // First Contentful Paint
+  | 'LCP'       // Largest Contentful Paint
+  | 'CLS'       // Cumulative Layout Shift
+  | 'TTFB'      // Time to First Byte
+  | 'INP'       // Interaction to Next Paint
+  | 'DOMReady'  // DOMContentLoaded
+  | 'Load';     // window.onload
+
+/** 指标评级 */
+export type PerformanceRating = 'good' | 'needs-improvement' | 'poor';
+
+/** 单条性能指标上报体 */
+export interface PerformanceMetricPayload {
+  eventId: string;
+  projectId: string;
+  release?: string;
+  timestamp: number;
+  url: string;
+  sessionId?: string;
+  userId?: string;
+
+  /** 指标名称 */
+  metricName: PerformanceMetricName;
+  /** 指标值（时间类单位 ms，CLS 为无单位分数） */
+  value: number;
+  /** 自动评级 */
+  rating: PerformanceRating;
+  /** 附加信息 */
+  extra?: Record<string, unknown>;
+}
+
+/** 性能数据批量上报请求体 */
+export interface PerformanceIngestRequest {
+  projectId: string;
+  sessionId?: string;
+  metrics: PerformanceMetricPayload[];
+}
+
+/** 性能数据上报响应体 */
+export interface PerformanceIngestResponse {
   success: boolean;
   message?: string;
 }

@@ -3,6 +3,7 @@ import { jsErrorHandler } from './handlers/jsError';
 import { promiseErrorHandler } from './handlers/promiseError';
 import { resourceErrorHandler } from './handlers/resourceError';
 import { httpErrorHandler } from './handlers/httpError';
+import { performanceHandler } from './handlers/performance';
 import type { MonitorOptions } from './types';
 
 export type {
@@ -13,14 +14,26 @@ export type {
   CaptureInput,
   EventDetails,
   ManualCaptureOptions,
+  Handler,
+  ThrottleOptions,
+  PerformanceInput,
+  PerformanceMetricPayload,
+  PerformanceMetricName,
+  PerformanceRating,
 } from './types';
 export { MonitorClient } from './client';
+export { jsErrorHandler } from './handlers/jsError';
+export { promiseErrorHandler } from './handlers/promiseError';
+export { resourceErrorHandler } from './handlers/resourceError';
+export { httpErrorHandler } from './handlers/httpError';
+export { performanceHandler } from './handlers/performance';
 
 const defaultHandlers = [
   jsErrorHandler(),
   promiseErrorHandler(),
   resourceErrorHandler(),
   httpErrorHandler(),
+  performanceHandler(),
 ];
 
 export function initMonitor(options: MonitorOptions): MonitorClient {
@@ -33,7 +46,7 @@ export function initMonitor(options: MonitorOptions): MonitorClient {
   client.startTimer();
 
   window.addEventListener('beforeunload', () => {
-    client.flush({ useBeacon: true });
+    client.flushAll({ useBeacon: true });
   });
 
   return client;

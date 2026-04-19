@@ -7,6 +7,14 @@ export interface StackFrame {
   functionName?: string;
   lineno?: number;
   colno?: number;
+  isSymbolicated?: boolean;
+  generatedFilename?: string;
+  generatedFunctionName?: string;
+  generatedLineno?: number;
+  generatedColno?: number;
+  contextLine?: string;
+  preContext?: string[];
+  postContext?: string[];
 }
 
 // 服务端归一化后的中间模型

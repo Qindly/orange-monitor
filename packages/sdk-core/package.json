@@ -7,12 +7,39 @@
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./handlers/jsError": {
+      "types": "./dist/handlers/jsError.d.ts",
+      "import": "./dist/handlers/jsError.js",
+      "require": "./dist/handlers/jsError.cjs"
+    },
+    "./handlers/promiseError": {
+      "types": "./dist/handlers/promiseError.d.ts",
+      "import": "./dist/handlers/promiseError.js",
+      "require": "./dist/handlers/promiseError.cjs"
+    },
+    "./handlers/resourceError": {
+      "types": "./dist/handlers/resourceError.d.ts",
+      "import": "./dist/handlers/resourceError.js",
+      "require": "./dist/handlers/resourceError.cjs"
+    },
+    "./handlers/httpError": {
+      "types": "./dist/handlers/httpError.d.ts",
+      "import": "./dist/handlers/httpError.js",
+      "require": "./dist/handlers/httpError.cjs"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.js",
+      "require": "./dist/client.cjs"
     }
   },
   "files": [
@@ -34,7 +61,8 @@
     "nanoid": "^5.1.6",
     "object-hash": "^3.0.0",
     "safe-stable-stringify": "^2.5.0",
-    "serialize-error": "^13.0.1"
+    "serialize-error": "^13.0.1",
+    "web-vitals": "^4.2.4"
   },
   "devDependencies": {
     "@types/error-stack-parser": "^2.0.2",

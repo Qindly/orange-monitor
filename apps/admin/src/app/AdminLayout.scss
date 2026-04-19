@@ -1,0 +1,29 @@
+.admin-layout {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  background:
+    radial-gradient(circle at top left, rgba(79, 70, 229, 0.1), transparent 28%),
+    linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+
+  &__sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+
+  &__content {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 960px) {
+  .admin-layout {
+    grid-template-columns: 1fr;
+
+    &__sidebar {
+      position: static;
+      height: auto;
+    }
+  }
+}

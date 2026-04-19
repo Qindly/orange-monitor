@@ -2,7 +2,7 @@ import type {
   GetErrorDetailResponse,
   GetErrorsResponse,
   StoredError,
-} from '../types/monitor';
+} from '../styles/monitor';
 
 const BASE_URL = 'http://localhost:3000';
 

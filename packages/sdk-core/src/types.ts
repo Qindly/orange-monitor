@@ -3,19 +3,42 @@ import type {
   IssueCategory,
   MonitorEventPayload,
   MonitorEventSource,
+  PerformanceMetricName,
+  PerformanceMetricPayload,
+  PerformanceRating,
 } from '@orange-monitor/protocol';
-export type { EventDetails, IssueCategory, MonitorEventPayload, MonitorEventSource } from '@orange-monitor/protocol';
 
-export interface MonitorOptions {
-  dsn: string; // 上报地址，必填项
-  projectId: string;
-  userId?: string; // 用户标识，可选
-  batchSize?: number; // 累计到多少就上报
-  flushInterval?: number; // 刷新间隔
-  Handlers?: Handler[];
+export type {
+  EventDetails,
+  IssueCategory,
+  MonitorEventPayload,
+  MonitorEventSource,
+  PerformanceMetricName,
+  PerformanceMetricPayload,
+  PerformanceRating,
+} from '@orange-monitor/protocol';
+
+export interface ThrottleOptions {
+  timeWindow: number;
+  maxCount: number;
 }
 
-// 业务方手动上报时的可选项
+export interface MonitorOptions {
+  dsn: string;
+  projectId: string;
+  release?: string;
+  userId?: string;
+  batchSize?: number;
+  perfBatchSize?: number;
+  flushInterval?: number;
+  Handlers?: Handler[];
+  denyUrls?: Array<string | RegExp>;
+  allowUrls?: Array<string | RegExp>;
+  ignoreErrors?: Array<string | RegExp>;
+  beforeSend?: (event: MonitorEventPayload) => MonitorEventPayload | null;
+  throttle?: ThrottleOptions;
+}
+
 export interface ManualCaptureOptions {
   extra?: Record<string, unknown>;
   normalizedMessage?: string;
@@ -23,30 +46,16 @@ export interface ManualCaptureOptions {
   details?: Partial<EventDetails>;
 }
 
-// Handler 插件接口
 export interface Handler {
   name: string;
   setup(client: MonitorClient): void;
 }
 
-// client.capture() 的入参
-// 通用字段由 client 自动补全：
-// - eventId
-// - projectId
-// - timestamp
-// - url
-// - sessionId
-//
-// 有些字段可以由 SDK normalize 阶段自动推导，所以这里做成可选：
-// - category
-// - title
-// - normalizedMessage
-// - fingerprint
-// - stackTopFrame
 export type CaptureInput = Omit<
   MonitorEventPayload,
   | 'eventId'
   | 'projectId'
+  | 'release'
   | 'timestamp'
   | 'url'
   | 'sessionId'
@@ -63,7 +72,14 @@ export type CaptureInput = Omit<
   stackTopFrame?: string;
 };
 
-// 避免循环引用，在这里前向声明 MonitorClient 的最小接口
+export interface PerformanceInput {
+  metricName: PerformanceMetricName;
+  value: number;
+  rating: PerformanceRating;
+  extra?: Record<string, unknown>;
+}
+
 export interface MonitorClient {
   capture(input: CaptureInput): void;
+  capturePerformance(input: PerformanceInput): void;
 }

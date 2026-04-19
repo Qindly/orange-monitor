@@ -20,7 +20,6 @@ export const addFetchObserver = createObserver<FetchData>((trigger) => {
     if (url.includes('/ingest')) {
       return originalFetch(...args);
     }
-
     try {
       const response = await originalFetch(...args);
       trigger({ url, method, startTime, endTime: Date.now(), response });

@@ -22,6 +22,21 @@ export interface IssueItem {
   details?: Record<string, unknown>;
 }
 
+export interface IssueEventStackFrame {
+  filename?: string;
+  functionName?: string;
+  lineno?: number;
+  colno?: number;
+  isSymbolicated?: boolean;
+  generatedFilename?: string;
+  generatedFunctionName?: string;
+  generatedLineno?: number;
+  generatedColno?: number;
+  contextLine?: string;
+  preContext?: string[];
+  postContext?: string[];
+}
+
 export interface IssueEventItem {
   id: string;
   eventId: string;
@@ -38,6 +53,8 @@ export interface IssueEventItem {
   sessionId?: string;
 
   rawStack?: string;
+  stackTopFrame?: string;
+  stackFrames?: IssueEventStackFrame[];
   extra?: Record<string, unknown>;
   details?: Record<string, unknown>;
 }
